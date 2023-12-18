@@ -199,12 +199,12 @@ jobs:
         shell: bash
     steps:
       - name: Download Wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-wheels
           path: wheels
       - name: Download Requirements
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: requirements
           path: requirements
@@ -257,7 +257,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Download Wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-wheels
           path: wheels
