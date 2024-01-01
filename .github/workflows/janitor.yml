@@ -36,7 +36,7 @@ jobs:
       issues: write # allow the action to comment on, add labels to, and close issues
       pull-requests: write # allow the action to comment on, add labels to, and close PRs
     steps:
-      - uses: actions/stale@b69b346013879cedbf50c69f572cd85439a41936
+      - uses: actions/stale@3f3b0175e8c66fb49b9a6d5a0cd1f8436d4c3ab6
         with:
           stale-issue-message: >
             We triage inactive PRs and issues in order to make it easier to find
