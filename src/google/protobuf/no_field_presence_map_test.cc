@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
@@ -54,6 +55,23 @@ MATCHER(MapEntryHasValue, "") {
 
   return r->HasField(arg, key);
 }
+
+// The following pattern is used to create a monomorphic matcher that matches an
+// input type (to avoid implicit casts between sign and unsigned integers).
+namespace internal {
+// `MATCHER_P` defines a polymorphic matcher; we monomorphize it for
+// `uint64_t` below to avoid conflicting deduced template arguments.
+MATCHER_P(MapEntryListFieldsSize, expected_size, "") {
+  const Reflection* r = arg.GetReflection();
+
+  std::vector<const FieldDescriptor*> list_fields_output;
+  r->ListFields(arg, &list_fields_output);
+  return list_fields_output.size() == expected_size;
+}
+}  // namespace internal
+// TODO: b/371232929 - can make this `inline constexpr` with C++17 as baseline.
+constexpr auto& MapEntryListFieldsSize =
+    internal::MapEntryListFieldsSize<uint64_t>;
 
 MATCHER(MapEntryKeyExplicitPresence, "") {
   const Descriptor* desc = arg.GetDescriptor();
@@ -314,6 +332,7 @@ TEST(NoFieldPresenceTest, TestNonZeroStringMapEntriesPopulatedInReflection) {
   // HasField for both key and value returns true.
   EXPECT_THAT(bytes_map_entry, MapEntryHasKey());
   EXPECT_THAT(bytes_map_entry, MapEntryHasValue());
+  EXPECT_THAT(bytes_map_entry, MapEntryListFieldsSize(2));
 }
 
 TEST(NoFieldPresenceTest, TestNonZeroIntMapEntriesPopulatedInReflection) {
@@ -336,6 +355,7 @@ TEST(NoFieldPresenceTest, TestNonZeroIntMapEntriesPopulatedInReflection) {
   // HasField for both key and value returns true.
   EXPECT_THAT(enum_map_entry, MapEntryHasKey());
   EXPECT_THAT(enum_map_entry, MapEntryHasValue());
+  EXPECT_THAT(enum_map_entry, MapEntryListFieldsSize(2));
 }
 
 TEST(NoFieldPresenceTest,
@@ -357,6 +377,7 @@ TEST(NoFieldPresenceTest,
   // HasField for both key and value returns true.
   EXPECT_THAT(msg_map_entry, MapEntryHasKey());
   EXPECT_THAT(msg_map_entry, MapEntryHasValue());
+  EXPECT_THAT(msg_map_entry, MapEntryListFieldsSize(2));
 
   // For value types that are messages, further test that the message fields
   // show up on reflection.
@@ -383,6 +404,7 @@ TEST(NoFieldPresenceTest,
   // HasField for both key and value returns true.
   EXPECT_THAT(explicit_msg_map_entry, MapEntryHasKey());
   EXPECT_THAT(explicit_msg_map_entry, MapEntryHasValue());
+  EXPECT_THAT(explicit_msg_map_entry, MapEntryListFieldsSize(2));
 
   // For value types that are messages, further test that the message fields
   // show up on reflection.
@@ -595,6 +617,7 @@ TEST(NoFieldPresenceTest, TestEmptyStringMapEntriesPopulatedInReflection) {
   // HasField even though they are zero.
   EXPECT_THAT(bytes_map_entry, MapEntryHasKey());
   EXPECT_THAT(bytes_map_entry, MapEntryHasValue());
+  EXPECT_THAT(bytes_map_entry, MapEntryListFieldsSize(2));
 }
 
 TEST(NoFieldPresenceTest, TestEmptyIntMapEntriesPopulatedInReflection) {
@@ -624,6 +647,7 @@ TEST(NoFieldPresenceTest, TestEmptyIntMapEntriesPopulatedInReflection) {
   // HasField even though they are zero.
   EXPECT_THAT(enum_map_entry, MapEntryHasKey());
   EXPECT_THAT(enum_map_entry, MapEntryHasValue());
+  EXPECT_THAT(enum_map_entry, MapEntryListFieldsSize(2));
 }
 
 TEST(NoFieldPresenceTest, TestEmptySubMessageMapEntriesPopulatedInReflection) {
@@ -653,6 +677,7 @@ TEST(NoFieldPresenceTest, TestEmptySubMessageMapEntriesPopulatedInReflection) {
   // HasField even though they are zero.
   EXPECT_THAT(msg_map_entry, MapEntryHasKey());
   EXPECT_THAT(msg_map_entry, MapEntryHasValue());
+  EXPECT_THAT(msg_map_entry, MapEntryListFieldsSize(2));
 
   // For value types that are messages, further test that the message fields
   // do not show up on reflection.
@@ -688,6 +713,7 @@ TEST(NoFieldPresenceTest,
   // HasField even though they are zero.
   EXPECT_THAT(explicit_msg_map_entry, MapEntryHasKey());
   EXPECT_THAT(explicit_msg_map_entry, MapEntryHasValue());
+  EXPECT_THAT(explicit_msg_map_entry, MapEntryListFieldsSize(2));
 
   // For value types that are messages, further test that the message fields
   // do not show up on reflection.
