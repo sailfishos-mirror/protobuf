@@ -37,6 +37,11 @@ struct PrivateAccess {
     return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
   }
 
+  template <typename T, typename... Args>
+  static auto InvokeConstructor(Args... args) {
+    return T(args...);
+  }
+
   template <typename ExtensionId>
   static constexpr uint32_t GetExtensionNumber(const ExtensionId& id) {
     return id.number();
