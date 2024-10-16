@@ -17,7 +17,7 @@ bazel_dep(name = "bazel_skylib", version = "1.7.0")
 bazel_dep(name = "jsoncpp", version = "1.9.5")
 bazel_dep(name = "rules_cc", version = "0.0.13")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
-bazel_dep(name = "rules_java", version = "7.11.1")
+bazel_dep(name = "rules_java", version = "7.12.1")
 bazel_dep(name = "rules_jvm_external", version = "6.3")
 bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
@@ -30,6 +30,13 @@ bazel_dep(name = "bazel_features", version = "1.17.0", repo_name = "proto_bazel_
 bazel_dep(
     name = "rules_shell",
     version = "0.2.0",
+)
+
+single_version_override(
+    module_name = "rules_java",
+    patch_strip = 1,
+    patches = ["//:rules_java.patch"],
+    version = "7.12.1",
 )
 
 # Proto toolchains

@@ -93,6 +93,8 @@ class ModuleFileFunctions(object):
   def use_extension(self, *args):
     return ExtensionFunctions()
 
+  def single_version_override(self, *args, **kwargs):
+    pass
 
 class Converter(object):
 

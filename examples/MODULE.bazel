@@ -8,6 +8,13 @@ local_path_override(
 
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 bazel_dep(name = "rules_cc", version = "0.0.1")
-bazel_dep(name = "rules_java", version = "7.3.0")
+bazel_dep(name = "rules_java", version = "7.12.1")
 bazel_dep(name = "rules_pkg", version = "0.7.0")
 bazel_dep(name = "rules_python", version = "0.25.0")
+
+single_version_override(
+    module_name = "rules_java",
+    patch_strip = 1,
+    patches = ["//:rules_java.patch"],
+    version = "7.12.1",
+)
