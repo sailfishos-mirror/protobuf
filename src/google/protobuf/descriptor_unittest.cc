@@ -2996,8 +2996,7 @@ TEST_F(MiscTest, FieldOptions) {
 
   // "bar" had options set.
   EXPECT_NE(&FieldOptions::default_instance(), options);
-  EXPECT_TRUE(bar->options().has_ctype());
-  EXPECT_EQ(FieldOptions::CORD, bar->options().ctype());
+  EXPECT_EQ(bar->cpp_string_type(), FieldDescriptor::CppStringType::kCord);
 }
 
 // ===================================================================
@@ -3637,7 +3636,7 @@ TEST(CustomOptions, OptionLocations) {
 
   // See that the regular options went through unscathed.
   EXPECT_TRUE(message->options().has_message_set_wire_format());
-  EXPECT_EQ(FieldOptions::CORD, field->options().ctype());
+  EXPECT_EQ(field->cpp_string_type(), FieldDescriptor::CppStringType::kCord);
 }
 
 TEST(CustomOptions, OptionTypes) {
