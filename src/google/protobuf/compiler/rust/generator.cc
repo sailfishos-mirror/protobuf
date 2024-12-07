@@ -151,13 +151,14 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       generator_context->Open(GetRsFile(ctx_without_printer, *file)));
   io::Printer printer(outfile.get());
   Context ctx = ctx_without_printer.WithPrinter(&printer);
+  absl::string_view runtime = ctx.RuntimeCrateName();
 
   // Convenience shorthands for common symbols.
   auto v = ctx.printer().WithVars({
       {"std", "::std"},
-      {"pb", "::protobuf"},
-      {"pbi", "::protobuf::__internal"},
-      {"pbr", "::protobuf::__internal::runtime"},
+      {"pb", runtime},
+      {"pbi", absl::StrCat(runtime, "::__internal")},
+      {"pbr", absl::StrCat(runtime, "::__internal::runtime")},
       {"NonNull", "::std::ptr::NonNull"},
       {"Phantom", "::std::marker::PhantomData"},
       {"Result", "::std::result::Result"},
