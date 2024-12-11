@@ -141,17 +141,6 @@ genrule(
     cmd = "cp $< $@",
 )
 
-staleness_test(
-    name = "test_amalgamation_staleness",
-    outs = [
-        "ext/google/protobuf/php-upb.c",
-        "ext/google/protobuf/php-upb.h",
-        "ext/google/protobuf/wkt.inc",
-    ],
-    generated_pattern = "generated/%s",
-    tags = ["manual"],
-)
-
 # The WKTs have to be checked in to support the Composer builds. This
 # generule and test ensure the source are current.
 

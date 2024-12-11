@@ -20,7 +20,6 @@ STALENESS_TESTS=(
   "src:cmake_lists_staleness_test"
   "src/google/protobuf:well_known_types_staleness_test"
   "objectivec:well_known_types_staleness_test"
-  "php:test_amalgamation_staleness"
   "php:proto_staleness_test"
   "ruby/ext/google/protobuf_c:test_amalgamation_staleness"
   "upb/cmake:test_generated_files"
