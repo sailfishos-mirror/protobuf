@@ -28,6 +28,16 @@ local_repository(
     path = "..",
 )
 
+# Bazel platform rules, for clang-cl.
+http_archive(
+    name = "platforms",
+    sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+    ],
+)
+
 # Needed because protobuf_deps brings rules_python 0.26.0 which is broken:
 # https://github.com/bazelbuild/rules_python/issues/1543
 http_archive(
