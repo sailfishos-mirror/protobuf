@@ -67,6 +67,11 @@
 
 #include "google/protobuf/io/tokenizer.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -105,7 +110,7 @@ CHARACTER_CLASS(Whitespace, c == ' ' || c == '\n' || c == '\t' || c == '\r' ||
 CHARACTER_CLASS(WhitespaceNoNewline,
                 c == ' ' || c == '\t' || c == '\r' || c == '\v' || c == '\f');
 
-CHARACTER_CLASS(Unprintable, c<' ' && c> '\0');
+CHARACTER_CLASS(Unprintable, c < ' ' && c > '\0');
 
 CHARACTER_CLASS(Digit, '0' <= c && c <= '9');
 CHARACTER_CLASS(OctalDigit, '0' <= c && c <= '7');
@@ -447,10 +452,17 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
   if (started_with_zero && (TryConsume('x') || TryConsume('X'))) {
     // A hex number (started with "0x").
     ConsumeOneOrMore<HexDigit>("\"0x\" must be followed by hex digits.");
+    while (TryConsume('_')) {
+      ConsumeOneOrMore<HexDigit>("\"0x\" must be followed by hex digits.");
+    }
 
   } else if (started_with_zero && LookingAt<Digit>()) {
     // An octal number (had a leading zero).
     ConsumeZeroOrMore<OctalDigit>();
+    while (TryConsume('_')) {
+      ConsumeOneOrMore<OctalDigit>(
+          "Numbers starting with leading zero must be in octal.");
+    }
     if (LookingAt<Digit>()) {
       AddError("Numbers starting with leading zero must be in octal.");
       ConsumeZeroOrMore<Digit>();
@@ -463,7 +475,9 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
       ConsumeZeroOrMore<Digit>();
     } else {
       ConsumeZeroOrMore<Digit>();
-
+      while (TryConsume('_')) {
+        ConsumeOneOrMore<Digit>("grouping marker must be followed by digits");
+      }
       if (TryConsume('.')) {
         is_float = true;
         ConsumeZeroOrMore<Digit>();
@@ -970,12 +984,23 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
       base = 8;
       overflow_if_mul_base = (kuint64max / 8) + 1;
     }
+  } else if (ptr[0] == '_') {
+    // Integers can't start with a digit group separator.
+    return false;
   }
 
+  bool trailing_underscore = false;
   uint64_t result = 0;
   // For all the leading '0's, and also the first non-zero character, we
   // don't need to multiply.
   while (*ptr != '\0') {
+    trailing_underscore = false;
+    if (*ptr == '_') {
+      // Skip digit group separators.
+      trailing_underscore = true;
+      ++ptr;
+      continue;
+    }
     int digit = DigitValue(*ptr++);
     if (digit >= base) {
       // The token provided by Tokenizer is invalid. i.e., 099 is an invalid
@@ -988,6 +1013,12 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
     }
   }
   for (; *ptr != '\0'; ptr++) {
+    trailing_underscore = false;
+    if (*ptr == '_') {
+      // Skip digit group separators.
+      trailing_underscore = true;
+      continue;
+    }
     int digit = DigitValue(*ptr);
     if (digit < 0 || digit >= base) {
       // The token provided by Tokenizer is invalid. i.e., 099 is an invalid
@@ -1007,6 +1038,9 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
   }
   if (result > max_value) return false;
 
+  if (trailing_underscore) {
+    return false;
+  }
   *output = result;
   return true;
 }
