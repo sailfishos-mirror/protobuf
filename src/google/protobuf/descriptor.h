@@ -2529,9 +2529,11 @@ class PROTOBUF_EXPORT DescriptorPool {
     static bool type_key;
     auto key = std::pair<const void*, const void*>(field, &type_key);
     {
+#ifdef PROTOBUF_OPENSOURCE
       absl::ReaderMutexLock lock(&field_memo_table_mutex_);
-      auto it = field_memo_table_.find(key);
-      if (it != field_memo_table_.end()) {
+#endif  // PROTOBUF_OPENSOURCE
+      auto it = field_memo_table_->find(key);
+      if (it != field_memo_table_->end()) {
         return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
       }
     }
@@ -2539,13 +2541,9 @@ class PROTOBUF_EXPORT DescriptorPool {
     result->value = func(field);
     {
       absl::MutexLock lock(&field_memo_table_mutex_);
-      auto& res = field_memo_table_[key];
-      // Only initialize the first time. We don't want to invalidate old
-      // references.
-      if (res == nullptr) {
-        res = std::move(result);
-      }
-      return internal::DownCast<const MemoData<ResultT>&>(*res).value;
+      auto insert_result = field_memo_table_->insert({key, std::move(result)});
+      auto it = insert_result.first;
+      return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
     }
   }
   // Return true if the given name is a sub-symbol of any non-package
@@ -2608,59 +2606,6 @@ class PROTOBUF_EXPORT DescriptorPool {
 
 #ifndef SWIG
   mutable absl::Mutex field_memo_table_mutex_;
-  mutable absl::flat_hash_map<std::pair<const void*, const void*>,
-                              std::unique_ptr<MemoBase>>
-      field_memo_table_ ABSL_GUARDED_BY(field_memo_table_mutex_);
-#endif  // SWIG
-
-  // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
-  // mutex which must be locked while accessing tables_.
-  absl::Mutex* mutex_;
-
-  // See constructor.
-  DescriptorDatabase* fallback_database_;
-  ErrorCollector* default_error_collector_;
-  const DescriptorPool* underlay_;
-
-#ifndef SWIG
-  // Dispatcher for recursive calls during builds.
-  std::unique_ptr<absl::AnyInvocable<void(absl::FunctionRef<void()>) const>>
-      dispatcher_;
-#endif  // SWIG
-
-  // This class contains a lot of hash maps with complicated types that
-  // we'd like to keep out of the header.
-  class Tables;
-  std::unique_ptr<Tables> tables_;
-
-  bool enforce_dependencies_;
-  bool lazily_build_dependencies_;
-  bool allow_unknown_;
-  bool enforce_weak_;
-  ExtDeclEnforcementLevel enforce_extension_declarations_;
-  bool disallow_enforce_utf8_;
-  bool deprecated_legacy_json_field_conflicts_;
-  bool enforce_naming_style_;
-  mutable bool build_started_ = false;
-
-  // Set of files to track for additional validation. The bool value when true
-  // means unused imports are treated as errors (and as warnings when false).
-  absl::flat_hash_map<std::string, bool> direct_input_files_;
-
-  // Specification of defaults to use for feature resolution.  This defaults to
-  // just the global and C++ features, but can be overridden for other runtimes.
-  std::unique_ptr<FeatureSetDefaults> feature_set_defaults_spec_;
-
-  // Returns true if the field extends an option message of descriptor.proto.
-  bool IsReadyForCheckingDescriptorExtDecl(
-      absl::string_view message_name) const;
-
-
-  bool ResolvesFeaturesForImpl(int extension_number) const;
-
-  const FeatureSetDefaults& GetFeatureSetDefaults() const;
-};
-
 
 // inline methods ====================================================
 
