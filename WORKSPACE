@@ -242,6 +242,15 @@ crates_repository(
         "paste": crate.spec(
             version = ">=1",
         ),
+        "proc_macro2": crate.spec(
+            version = ">=1",
+        ),
+        "quote": crate.spec(
+            version = ">=1.56",
+        ),
+        "syn": crate.spec(
+            version = ">=1.61",
+        ),
     },
 )
 
