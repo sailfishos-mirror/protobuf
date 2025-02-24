@@ -1,7 +1,8 @@
+# Keep this in sync with .bazelci/presubmit.yml
 bcr_test_module:
   module_path: examples
   matrix:
-    platform: ["debian10", "macos", "ubuntu2004", "windows"]
+    platform: ["debian10", "macos", "macos_arm64", "ubuntu2004", "windows"]
     bazel: [7.x, 8.x]
 
   tasks:
