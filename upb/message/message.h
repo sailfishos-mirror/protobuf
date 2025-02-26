@@ -77,7 +77,7 @@ UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
 // The range given in `data` must be contained inside the most recently
 // returned region.
 bool upb_Message_DeleteUnknown(upb_Message* msg, upb_StringView* data,
-                               uintptr_t* iter);
+                               uintptr_t* iter, upb_Arena* arena);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
