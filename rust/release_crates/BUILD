@@ -9,6 +9,7 @@ sh_binary(
         "//rust/release_crates/protobuf:protobuf_crate",
         "//rust/release_crates/protobuf_codegen:protobuf_codegen_crate",
         "//rust/release_crates/protobuf_example:protobuf_example_crate",
+        "//rust/release_crates/protobuf_macros:protobuf_macros_crate",
         "//rust/release_crates/protobuf_well_known_types:crate",
     ],
     tags = ["manual"],
@@ -20,9 +21,10 @@ sh_binary(
     srcs = ["release.sh"],
     data = [
         "//:protoc",
-        "//rust/release_crates/protobuf:protobuf_crate",
         "//rust/release_crates/protobuf_codegen:protobuf_codegen_crate",
         "//rust/release_crates/protobuf_example:protobuf_example_crate",
+        "//rust/release_crates/protobuf:protobuf_crate",
+        # TODO: Add protobuf_macros to release script.
     ],
     tags = ["manual"],
     deps = ["@bazel_tools//tools/bash/runfiles"],
