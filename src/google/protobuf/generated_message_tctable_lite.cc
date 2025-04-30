@@ -1797,27 +1797,75 @@ inline void SetHas(const FieldEntry& entry, MessageLite* msg) {
 }
 }  // namespace
 
-// Destroys any existing oneof union member (if necessary). Returns true if the
-// caller is responsible for initializing the object, or false if the field
-// already has the desired case.
-bool TcParser::ChangeOneof(const TcParseTableBase* table,
+void TcParser::InitOneof(const TcParseTableBase* table,
+                         const TcParseTableBase* inner_table,
+                         const TcParseTableBase::FieldEntry& entry,
+                         MessageLite* msg, void* const base) {
+  uint16_t kind = entry.type_card & field_layout::kFkMask;
+  uint16_t rep = entry.type_card & field_layout::kRepMask;
+  if (kind == field_layout::kFkString) {
+    switch (rep) {
+      case field_layout::kRepAString: {
+        auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
+        field.InitDefault();
+        break;
+      }
+      case field_layout::kRepMString: {
+        if (msg->GetArena() == nullptr) {
+          RefAt<MicroString>(base, entry.offset).InitDefault();
+        }
+        break;
+      }
+      case field_layout::kRepCord: {
+        absl::Cord* field = Arena::Create<absl::Cord>(msg->GetArena());
+        RefAt<absl::Cord*>(base, entry.offset) = field;
+        break;
+      }
+      case field_layout::kRepSString:
+      case field_layout::kRepIString:
+      default:
+        ABSL_DLOG(FATAL) << "string rep not handled: "
+                         << (rep >> field_layout::kRepShift);
+        return;
+    }
+  } else if (kind == field_layout::kFkMessage) {
+    switch (rep) {
+      case field_layout::kRepMessage:
+      case field_layout::kRepGroup: {
+        auto& field = RefAt<MessageLite*>(base, entry.offset);
+        field = NewMessage(inner_table, msg->GetArena());
+        break;
+      }
+      default:
+        ABSL_DLOG(FATAL) << "message rep not handled: "
+                         << (rep >> field_layout::kRepShift);
+        break;
+    }
+  }
+}
+
+// Destroys any existing oneof union member (if necessary). Initializes the
+// oneof field if the caller is responsible for initializing the object, or does
+// not perform initialization if the field already has the desired case.
+void TcParser::ChangeOneof(const TcParseTableBase* table,
+                           const TcParseTableBase* inner_table,
                            const TcParseTableBase::FieldEntry& entry,
                            uint32_t field_num, ParseContext* ctx,
-                           MessageLite* msg) {
+                           MessageLite* msg, void* const base) {
   // The _oneof_case_ value offset is stored in the has-bit index.
   uint32_t* oneof_case = &TcParser::RefAt<uint32_t>(msg, entry.has_idx);
   uint32_t current_case = *oneof_case;
   *oneof_case = field_num;
 
   if (current_case == 0) {
-    // If the member is empty, we don't have anything to clear. Caller is
-    // responsible for creating a new member object.
-    return true;
+    // If the member is empty, we don't have anything to clear.
+    // We must create a new member object.
+    InitOneof(table, inner_table, entry, msg, base);
+    return;
   }
-  if (current_case == field_num) {
-    // If the member is already active, then it should be merged. We're done.
-    return false;
-  }
+  // If the member is already active, then it should be merged. We're done.
+  if (current_case == field_num) return;
+
   // Look up the value that is already stored, and dispose of it if necessary.
   const FieldEntry* current_entry = FindFieldEntry(table, current_case);
   uint16_t current_kind = current_entry->type_card & field_layout::kFkMask;
@@ -1825,19 +1873,19 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
   if (current_kind == field_layout::kFkString) {
     switch (current_rep) {
       case field_layout::kRepAString: {
-        auto& field = RefAt<ArenaStringPtr>(msg, current_entry->offset);
+        auto& field = RefAt<ArenaStringPtr>(base, current_entry->offset);
         field.Destroy();
         break;
       }
       case field_layout::kRepMString: {
         if (msg->GetArena() == nullptr) {
-          RefAt<MicroString>(msg, current_entry->offset).Destroy();
+          RefAt<MicroString>(base, current_entry->offset).Destroy();
         }
         break;
       }
       case field_layout::kRepCord: {
         if (msg->GetArena() == nullptr) {
-          delete RefAt<absl::Cord*>(msg, current_entry->offset);
+          delete RefAt<absl::Cord*>(base, current_entry->offset);
         }
         break;
       }
@@ -1846,13 +1894,14 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
       default:
         ABSL_DLOG(FATAL) << "string rep not handled: "
                          << (current_rep >> field_layout::kRepShift);
-        return true;
+        InitOneof(table, inner_table, entry, msg, base);
+        return;
     }
   } else if (current_kind == field_layout::kFkMessage) {
     switch (current_rep) {
       case field_layout::kRepMessage:
       case field_layout::kRepGroup: {
-        auto& field = RefAt<MessageLite*>(msg, current_entry->offset);
+        auto& field = RefAt<MessageLite*>(base, current_entry->offset);
         if (!msg->GetArena()) {
           delete field;
         }
@@ -1864,7 +1913,8 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
         break;
     }
   }
-  return true;
+  InitOneof(table, inner_table, entry, msg, base);
+  return;
 }
 
 namespace {
@@ -1921,13 +1971,14 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
   }
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
   // Set the field present:
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (card == field_layout::kFcOneof) {
-    ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ChangeOneof(table, /*inner_table=*/nullptr, entry, data.tag() >> 3, ctx,
+                msg, base);
   }
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
   // Copy the value:
   if (rep == field_layout::kRep64Bits) {
     RefAt<uint64_t>(base, entry.offset) = UnalignedLoad<uint64_t>(ptr);
@@ -2073,14 +2124,15 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
   }
 
   // Mark the field as present:
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
   const bool is_oneof = card == field_layout::kFcOneof;
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ChangeOneof(table, /*inner_table=*/nullptr, entry, data.tag() >> 3, ctx,
+                msg, base);
   }
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
   if (rep == field_layout::kRep64Bits) {
     RefAt<uint64_t>(base, entry.offset) = tmp;
   } else if (rep == field_layout::kRep32Bits) {
@@ -2347,20 +2399,19 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   const uint16_t rep = type_card & field_layout::kRepMask;
 
   // Mark the field as present:
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
   const bool is_oneof = card == field_layout::kFcOneof;
-  bool need_init = false;
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    need_init = ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ChangeOneof(table, /*inner_table=*/nullptr, entry, data.tag() >> 3, ctx,
+                msg, base);
   }
 
   bool is_valid = false;
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
   switch (rep) {
     case field_layout::kRepAString: {
       auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
-      if (need_init) field.InitDefault();
       Arena* arena = msg->GetArena();
       if (arena) {
         ptr = ctx->ReadArenaString(ptr, &field, arena);
@@ -2378,7 +2429,6 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
 
     case field_layout::kRepMString: {
       auto& field = RefAt<MicroString>(base, entry.offset);
-      if (need_init) field.InitDefault();
       ptr = ctx->ReadMicroString(ptr, field, msg->GetArena());
       is_valid = MpVerifyUtf8(field.Get(), table, entry, xform_val);
       break;
@@ -2388,12 +2438,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
     case field_layout::kRepCord: {
       absl::Cord* field;
       if (is_oneof) {
-        if (need_init) {
-          field = Arena::Create<absl::Cord>(msg->GetArena());
-          RefAt<absl::Cord*>(msg, entry.offset) = field;
-        } else {
-          field = RefAt<absl::Cord*>(msg, entry.offset);
-        }
+        field = RefAt<absl::Cord*>(msg, entry.offset);
       } else {
         field = &RefAt<absl::Cord>(base, entry.offset);
       }
@@ -2552,21 +2597,21 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     }
   }
 
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  MessageLite* field = RefAt<MessageLite*>(base, entry.offset);
+  const TcParseTableBase* inner_table =
+      GetTableFromAux(type_card, *table->field_aux(&entry));
+
   const bool is_oneof = card == field_layout::kFcOneof;
-  bool need_init = false;
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    need_init = ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ChangeOneof(table, inner_table, entry, data.tag() >> 3, ctx, msg, base);
   }
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
   SyncHasbits(msg, hasbits, table);
-  MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
 
-  const TcParseTableBase* inner_table =
-      GetTableFromAux(type_card, *table->field_aux(&entry));
-  if (need_init || field == nullptr) {
+  if (field == nullptr) {
     field = NewMessage(inner_table, msg->GetArena());
   }
   const auto inner_loop = [&](const char* ptr) {
