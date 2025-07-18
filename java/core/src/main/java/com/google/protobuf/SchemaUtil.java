@@ -648,8 +648,23 @@ final class SchemaUtil {
     if (value instanceof LazyFieldLite) {
       return CodedOutputStream.computeLazyFieldSize(fieldNumber, (LazyFieldLite) value);
     } else {
-      return CodedOutputStream.computeMessageSize(fieldNumber, (MessageLite) value, schema);
+      return computeMessageSize(fieldNumber, (MessageLite) value, schema);
     }
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an embedded message field, including
+   * tag.
+   */
+  static int computeMessageSize(
+      final int fieldNumber, final MessageLite value, final Schema schema) {
+    return CodedOutputStream.computeTagSize(fieldNumber) + computeMessageSizeNoTag(value, schema);
+  }
+
+  /** Compute the number of bytes that would be needed to encode an embedded message field. */
+  static int computeMessageSizeNoTag(final MessageLite value, final Schema schema) {
+    return CodedOutputStream.computeLengthDelimitedFieldSize(
+        ((AbstractMessageLite) value).getSerializedSize(schema));
   }
 
   static int computeSizeMessageList(int fieldNumber, List<?> list) {
@@ -680,7 +695,7 @@ final class SchemaUtil {
       if (value instanceof LazyFieldLite) {
         size += CodedOutputStream.computeLazyFieldSizeNoTag((LazyFieldLite) value);
       } else {
-        size += CodedOutputStream.computeMessageSizeNoTag((MessageLite) value, schema);
+        size += computeMessageSizeNoTag((MessageLite) value, schema);
       }
     }
     return size;
