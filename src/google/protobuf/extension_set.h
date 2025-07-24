@@ -92,6 +92,7 @@ namespace protobuf {
 namespace internal {
 
 class InternalMetadata;
+class ExtensionSetInlTest;
 
 namespace v2 {
 class TableDrivenMessage;
@@ -599,6 +600,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
   friend class google::protobuf::internal::v2::TableDrivenMessage;
+  friend class ExtensionSetInlTest;
 
   friend void internal::InitializeLazyExtensionSet();
 
@@ -1164,6 +1166,7 @@ class PROTOBUF_EXPORT ExtensionSet {
                                           internal::InternalMetadata* metadata,
                                           const char* ptr,
                                           internal::ParseContext* ctx);
+
   template <typename Msg, typename T>
   const char* ParseMessageSetItemTmpl(const char* ptr, const Msg* extendee,
                                       internal::InternalMetadata* metadata,

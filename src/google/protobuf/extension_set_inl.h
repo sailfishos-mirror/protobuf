@@ -12,10 +12,13 @@
 #include <string>
 #include <utility>
 
+#include "absl/container/fixed_array.h"
+#include "absl/types/span.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 namespace google {
 namespace protobuf {
@@ -176,6 +179,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
   return ptr;
 }
 
+
 template <typename Msg, typename T>
 const char* ExtensionSet::ParseMessageSetItemTmpl(
     const char* ptr, const Msg* extendee, internal::InternalMetadata* metadata,
@@ -257,5 +261,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_EXTENSION_SET_INL_H__
