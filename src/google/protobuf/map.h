@@ -1504,7 +1504,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
       Node* new_node;
       if constexpr (std::is_base_of_v<MessageLite, mapped_type>) {
         new_node = CreateNode(key);
-        new_node->kv.second = value;
+        new_node->kv.second.MergeFrom(value);
       } else {
         new_node = CreateNode(key, value);
       }
