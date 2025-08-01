@@ -274,6 +274,10 @@ inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
   return EnableStableExperiments();
 }
 
+inline constexpr bool EnableExperimentalHintHasBitsForRepeatedFields() {
+  return false;
+}
+
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
