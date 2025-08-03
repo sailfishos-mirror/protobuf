@@ -12730,6 +12730,7 @@ PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_name(Arg_&& arg, Args_... a
 }
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.name)
   return _s;
@@ -12740,12 +12741,10 @@ inline const ::std::string& FileDescriptorProto::_internal_name() const {
 }
 inline void FileDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_name() {
@@ -12799,6 +12798,7 @@ PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_package(Arg_&& arg, Args_..
 }
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_package()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::std::string* _s = _internal_mutable_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.package)
   return _s;
@@ -12809,12 +12809,10 @@ inline const ::std::string& FileDescriptorProto::_internal_package() const {
 }
 inline void FileDescriptorProto::_internal_set_package(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   _impl_.package_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   return _impl_.package_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_package() {
@@ -13484,6 +13482,7 @@ PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_syntax(Arg_&& arg, Args_...
 }
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_syntax()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   ::std::string* _s = _internal_mutable_syntax();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.syntax)
   return _s;
@@ -13494,12 +13493,10 @@ inline const ::std::string& FileDescriptorProto::_internal_syntax() const {
 }
 inline void FileDescriptorProto::_internal_set_syntax(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   _impl_.syntax_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   return _impl_.syntax_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_syntax() {
@@ -13806,6 +13803,7 @@ PROTOBUF_ALWAYS_INLINE void DescriptorProto::set_name(Arg_&& arg, Args_... args)
 }
 inline ::std::string* PROTOBUF_NONNULL DescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.name)
   return _s;
@@ -13816,12 +13814,10 @@ inline const ::std::string& DescriptorProto::_internal_name() const {
 }
 inline void DescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL DescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE DescriptorProto::release_name() {
@@ -14450,6 +14446,7 @@ PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_full_name(Arg
 }
 inline ::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::mutable_full_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_full_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
   return _s;
@@ -14460,12 +14457,10 @@ inline const ::std::string& ExtensionRangeOptions_Declaration::_internal_full_na
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_full_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.full_name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_internal_mutable_full_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.full_name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release_full_name() {
@@ -14519,6 +14514,7 @@ PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_type(Arg_&& a
 }
 inline ::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::mutable_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::std::string* _s = _internal_mutable_type();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.Declaration.type)
   return _s;
@@ -14529,12 +14525,10 @@ inline const ::std::string& ExtensionRangeOptions_Declaration::_internal_type() 
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_type(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   _impl_.type_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_internal_mutable_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   return _impl_.type_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release_type() {
@@ -14881,6 +14875,7 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_name(Arg_&& arg, Args_... 
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.name)
   return _s;
@@ -14891,12 +14886,10 @@ inline const ::std::string& FieldDescriptorProto::_internal_name() const {
 }
 inline void FieldDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_name() {
@@ -15040,6 +15033,7 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_type_name(Arg_&& arg, Args
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_type_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   ::std::string* _s = _internal_mutable_type_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.type_name)
   return _s;
@@ -15050,12 +15044,10 @@ inline const ::std::string& FieldDescriptorProto::_internal_type_name() const {
 }
 inline void FieldDescriptorProto::_internal_set_type_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   _impl_.type_name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_type_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   return _impl_.type_name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_type_name() {
@@ -15109,6 +15101,7 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_extendee(Arg_&& arg, Args_
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_extendee()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::std::string* _s = _internal_mutable_extendee();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.extendee)
   return _s;
@@ -15119,12 +15112,10 @@ inline const ::std::string& FieldDescriptorProto::_internal_extendee() const {
 }
 inline void FieldDescriptorProto::_internal_set_extendee(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   _impl_.extendee_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_extendee() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   return _impl_.extendee_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_extendee() {
@@ -15178,6 +15169,7 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_default_value(Arg_&& arg, 
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_default_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   ::std::string* _s = _internal_mutable_default_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.default_value)
   return _s;
@@ -15188,12 +15180,10 @@ inline const ::std::string& FieldDescriptorProto::_internal_default_value() cons
 }
 inline void FieldDescriptorProto::_internal_set_default_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   _impl_.default_value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_default_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   return _impl_.default_value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_default_value() {
@@ -15275,6 +15265,7 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_json_name(Arg_&& arg, Args
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_json_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   ::std::string* _s = _internal_mutable_json_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.json_name)
   return _s;
@@ -15285,12 +15276,10 @@ inline const ::std::string& FieldDescriptorProto::_internal_json_name() const {
 }
 inline void FieldDescriptorProto::_internal_set_json_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   _impl_.json_name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_json_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   return _impl_.json_name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_json_name() {
@@ -15474,6 +15463,7 @@ PROTOBUF_ALWAYS_INLINE void OneofDescriptorProto::set_name(Arg_&& arg, Args_... 
 }
 inline ::std::string* PROTOBUF_NONNULL OneofDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.OneofDescriptorProto.name)
   return _s;
@@ -15484,12 +15474,10 @@ inline const ::std::string& OneofDescriptorProto::_internal_name() const {
 }
 inline void OneofDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL OneofDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE OneofDescriptorProto::release_name() {
@@ -15705,6 +15693,7 @@ PROTOBUF_ALWAYS_INLINE void EnumDescriptorProto::set_name(Arg_&& arg, Args_... a
 }
 inline ::std::string* PROTOBUF_NONNULL EnumDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.name)
   return _s;
@@ -15715,12 +15704,10 @@ inline const ::std::string& EnumDescriptorProto::_internal_name() const {
 }
 inline void EnumDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL EnumDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE EnumDescriptorProto::release_name() {
@@ -16071,6 +16058,7 @@ PROTOBUF_ALWAYS_INLINE void EnumValueDescriptorProto::set_name(Arg_&& arg, Args_
 }
 inline ::std::string* PROTOBUF_NONNULL EnumValueDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValueDescriptorProto.name)
   return _s;
@@ -16081,12 +16069,10 @@ inline const ::std::string& EnumValueDescriptorProto::_internal_name() const {
 }
 inline void EnumValueDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL EnumValueDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE EnumValueDescriptorProto::release_name() {
@@ -16270,6 +16256,7 @@ PROTOBUF_ALWAYS_INLINE void ServiceDescriptorProto::set_name(Arg_&& arg, Args_..
 }
 inline ::std::string* PROTOBUF_NONNULL ServiceDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceDescriptorProto.name)
   return _s;
@@ -16280,12 +16267,10 @@ inline const ::std::string& ServiceDescriptorProto::_internal_name() const {
 }
 inline void ServiceDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL ServiceDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE ServiceDescriptorProto::release_name() {
@@ -16491,6 +16476,7 @@ PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_name(Arg_&& arg, Args_...
 }
 inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.name)
   return _s;
@@ -16501,12 +16487,10 @@ inline const ::std::string& MethodDescriptorProto::_internal_name() const {
 }
 inline void MethodDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_name() {
@@ -16560,6 +16544,7 @@ PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_input_type(Arg_&& arg, Ar
 }
 inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::mutable_input_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::std::string* _s = _internal_mutable_input_type();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.input_type)
   return _s;
@@ -16570,12 +16555,10 @@ inline const ::std::string& MethodDescriptorProto::_internal_input_type() const 
 }
 inline void MethodDescriptorProto::_internal_set_input_type(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   _impl_.input_type_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_input_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   return _impl_.input_type_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_input_type() {
@@ -16629,6 +16612,7 @@ PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_output_type(Arg_&& arg, A
 }
 inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::mutable_output_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   ::std::string* _s = _internal_mutable_output_type();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.output_type)
   return _s;
@@ -16639,12 +16623,10 @@ inline const ::std::string& MethodDescriptorProto::_internal_output_type() const
 }
 inline void MethodDescriptorProto::_internal_set_output_type(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   _impl_.output_type_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_output_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   return _impl_.output_type_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_output_type() {
@@ -16856,6 +16838,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_package(Arg_&& arg, Args_... a
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_java_package()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_java_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.java_package)
   return _s;
@@ -16866,12 +16849,10 @@ inline const ::std::string& FileOptions::_internal_java_package() const {
 }
 inline void FileOptions::_internal_set_java_package(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.java_package_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_java_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.java_package_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_java_package() {
@@ -16925,6 +16906,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_outer_classname(Arg_&& arg, Ar
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_java_outer_classname()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::std::string* _s = _internal_mutable_java_outer_classname();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.java_outer_classname)
   return _s;
@@ -16935,12 +16917,10 @@ inline const ::std::string& FileOptions::_internal_java_outer_classname() const 
 }
 inline void FileOptions::_internal_set_java_outer_classname(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   _impl_.java_outer_classname_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_java_outer_classname() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   return _impl_.java_outer_classname_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_java_outer_classname() {
@@ -17109,6 +17089,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_go_package(Arg_&& arg, Args_... arg
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_go_package()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   ::std::string* _s = _internal_mutable_go_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.go_package)
   return _s;
@@ -17119,12 +17100,10 @@ inline const ::std::string& FileOptions::_internal_go_package() const {
 }
 inline void FileOptions::_internal_set_go_package(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   _impl_.go_package_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_go_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   return _impl_.go_package_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_go_package() {
@@ -17318,6 +17297,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_objc_class_prefix(Arg_&& arg, Args_
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_objc_class_prefix()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   ::std::string* _s = _internal_mutable_objc_class_prefix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.objc_class_prefix)
   return _s;
@@ -17328,12 +17308,10 @@ inline const ::std::string& FileOptions::_internal_objc_class_prefix() const {
 }
 inline void FileOptions::_internal_set_objc_class_prefix(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   _impl_.objc_class_prefix_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_objc_class_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   return _impl_.objc_class_prefix_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_objc_class_prefix() {
@@ -17387,6 +17365,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_csharp_namespace(Arg_&& arg, Args_.
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_csharp_namespace()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   ::std::string* _s = _internal_mutable_csharp_namespace();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.csharp_namespace)
   return _s;
@@ -17397,12 +17376,10 @@ inline const ::std::string& FileOptions::_internal_csharp_namespace() const {
 }
 inline void FileOptions::_internal_set_csharp_namespace(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   _impl_.csharp_namespace_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_csharp_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   return _impl_.csharp_namespace_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_csharp_namespace() {
@@ -17456,6 +17433,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_swift_prefix(Arg_&& arg, Args_... a
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_swift_prefix()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000020U);
   ::std::string* _s = _internal_mutable_swift_prefix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.swift_prefix)
   return _s;
@@ -17466,12 +17444,10 @@ inline const ::std::string& FileOptions::_internal_swift_prefix() const {
 }
 inline void FileOptions::_internal_set_swift_prefix(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000020U);
   _impl_.swift_prefix_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_swift_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000020U);
   return _impl_.swift_prefix_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_swift_prefix() {
@@ -17525,6 +17501,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_class_prefix(Arg_&& arg, Args_.
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_php_class_prefix()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000040U);
   ::std::string* _s = _internal_mutable_php_class_prefix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_class_prefix)
   return _s;
@@ -17535,12 +17512,10 @@ inline const ::std::string& FileOptions::_internal_php_class_prefix() const {
 }
 inline void FileOptions::_internal_set_php_class_prefix(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000040U);
   _impl_.php_class_prefix_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_class_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000040U);
   return _impl_.php_class_prefix_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_php_class_prefix() {
@@ -17594,6 +17569,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_namespace(Arg_&& arg, Args_... 
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_php_namespace()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000080U);
   ::std::string* _s = _internal_mutable_php_namespace();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_namespace)
   return _s;
@@ -17604,12 +17580,10 @@ inline const ::std::string& FileOptions::_internal_php_namespace() const {
 }
 inline void FileOptions::_internal_set_php_namespace(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000080U);
   _impl_.php_namespace_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000080U);
   return _impl_.php_namespace_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_php_namespace() {
@@ -17663,6 +17637,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_metadata_namespace(Arg_&& arg, 
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_php_metadata_namespace()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000100U);
   ::std::string* _s = _internal_mutable_php_metadata_namespace();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_metadata_namespace)
   return _s;
@@ -17673,12 +17648,10 @@ inline const ::std::string& FileOptions::_internal_php_metadata_namespace() cons
 }
 inline void FileOptions::_internal_set_php_metadata_namespace(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000100U);
   _impl_.php_metadata_namespace_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_metadata_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000100U);
   return _impl_.php_metadata_namespace_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_php_metadata_namespace() {
@@ -17732,6 +17705,7 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_ruby_package(Arg_&& arg, Args_... a
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_ruby_package()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000200U);
   ::std::string* _s = _internal_mutable_ruby_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.ruby_package)
   return _s;
@@ -17742,12 +17716,10 @@ inline const ::std::string& FileOptions::_internal_ruby_package() const {
 }
 inline void FileOptions::_internal_set_ruby_package(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000200U);
   _impl_.ruby_package_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_ruby_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000200U);
   return _impl_.ruby_package_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_ruby_package() {
@@ -18276,6 +18248,7 @@ PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_value(Arg_&& arg, A
 }
 inline ::std::string* PROTOBUF_NONNULL FieldOptions_EditionDefault::mutable_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.EditionDefault.value)
   return _s;
@@ -18286,12 +18259,10 @@ inline const ::std::string& FieldOptions_EditionDefault::_internal_value() const
 }
 inline void FieldOptions_EditionDefault::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FieldOptions_EditionDefault::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FieldOptions_EditionDefault::release_value() {
@@ -18411,6 +18382,7 @@ PROTOBUF_ALWAYS_INLINE void FieldOptions_FeatureSupport::set_deprecation_warning
 }
 inline ::std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::mutable_deprecation_warning()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_deprecation_warning();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.FeatureSupport.deprecation_warning)
   return _s;
@@ -18421,12 +18393,10 @@ inline const ::std::string& FieldOptions_FeatureSupport::_internal_deprecation_w
 }
 inline void FieldOptions_FeatureSupport::_internal_set_deprecation_warning(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.deprecation_warning_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::_internal_mutable_deprecation_warning() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.deprecation_warning_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE FieldOptions_FeatureSupport::release_deprecation_warning() {
@@ -20213,6 +20183,7 @@ PROTOBUF_ALWAYS_INLINE void UninterpretedOption_NamePart::set_name_part(Arg_&& a
 }
 inline ::std::string* PROTOBUF_NONNULL UninterpretedOption_NamePart::mutable_name_part()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_name_part();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.NamePart.name_part)
   return _s;
@@ -20223,12 +20194,10 @@ inline const ::std::string& UninterpretedOption_NamePart::_internal_name_part() 
 }
 inline void UninterpretedOption_NamePart::_internal_set_name_part(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.name_part_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL UninterpretedOption_NamePart::_internal_mutable_name_part() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.name_part_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE UninterpretedOption_NamePart::release_name_part() {
@@ -20364,6 +20333,7 @@ PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_identifier_value(Arg_&& arg
 }
 inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::mutable_identifier_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_identifier_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.identifier_value)
   return _s;
@@ -20374,12 +20344,10 @@ inline const ::std::string& UninterpretedOption::_internal_identifier_value() co
 }
 inline void UninterpretedOption::_internal_set_identifier_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.identifier_value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_identifier_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.identifier_value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE UninterpretedOption::release_identifier_value() {
@@ -20517,6 +20485,7 @@ PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_string_value(Arg_&& arg, Ar
 }
 inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::mutable_string_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.string_value)
   return _s;
@@ -20527,12 +20496,10 @@ inline const ::std::string& UninterpretedOption::_internal_string_value() const 
 }
 inline void UninterpretedOption::_internal_set_string_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   _impl_.string_value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   return _impl_.string_value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE UninterpretedOption::release_string_value() {
@@ -20586,6 +20553,7 @@ PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_aggregate_value(Arg_&& arg,
 }
 inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::mutable_aggregate_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   ::std::string* _s = _internal_mutable_aggregate_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.aggregate_value)
   return _s;
@@ -20596,12 +20564,10 @@ inline const ::std::string& UninterpretedOption::_internal_aggregate_value() con
 }
 inline void UninterpretedOption::_internal_set_aggregate_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   _impl_.aggregate_value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_aggregate_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   return _impl_.aggregate_value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE UninterpretedOption::release_aggregate_value() {
@@ -21354,6 +21320,7 @@ PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_leading_comments(Arg_&&
 }
 inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_leading_comments()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_leading_comments();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.Location.leading_comments)
   return _s;
@@ -21364,12 +21331,10 @@ inline const ::std::string& SourceCodeInfo_Location::_internal_leading_comments(
 }
 inline void SourceCodeInfo_Location::_internal_set_leading_comments(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.leading_comments_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::_internal_mutable_leading_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.leading_comments_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_leading_comments() {
@@ -21423,6 +21388,7 @@ PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_trailing_comments(Arg_&
 }
 inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_trailing_comments()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::std::string* _s = _internal_mutable_trailing_comments();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.Location.trailing_comments)
   return _s;
@@ -21433,12 +21399,10 @@ inline const ::std::string& SourceCodeInfo_Location::_internal_trailing_comments
 }
 inline void SourceCodeInfo_Location::_internal_set_trailing_comments(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   _impl_.trailing_comments_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::_internal_mutable_trailing_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   return _impl_.trailing_comments_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_trailing_comments() {
@@ -21660,6 +21624,7 @@ PROTOBUF_ALWAYS_INLINE void GeneratedCodeInfo_Annotation::set_source_file(Arg_&&
 }
 inline ::std::string* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::mutable_source_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_source_file();
   // @@protoc_insertion_point(field_mutable:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
   return _s;
@@ -21670,12 +21635,10 @@ inline const ::std::string& GeneratedCodeInfo_Annotation::_internal_source_file(
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_source_file(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.source_file_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::_internal_mutable_source_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.source_file_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE GeneratedCodeInfo_Annotation::release_source_file() {
