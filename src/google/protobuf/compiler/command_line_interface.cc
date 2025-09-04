@@ -333,6 +333,13 @@ void CommandLineInterface::GetTransitiveDependencies(
     GetTransitiveDependencies(file->dependency(i), already_seen, output,
                               options);
   }
+  for (int i = 0; i < file->option_dependency_count(); ++i) {
+    const FileDescriptor* dep =
+        file->pool()->FindFileByName(file->option_dependency_name(i));
+    if (dep != nullptr) {
+      GetTransitiveDependencies(dep, already_seen, output, options);
+    }
+  }
 
   // Add this file.
   FileDescriptorProto* new_descriptor = output->Add();

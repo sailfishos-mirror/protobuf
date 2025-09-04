@@ -3104,7 +3104,7 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   EXPECT_TRUE(descriptor_set.file(1).has_source_code_info());
 }
 
-TEST_F(CommandLineInterfaceTest, NoWriteTransitiveOptionImportDescriptorSet) {
+TEST_F(CommandLineInterfaceTest, WriteTransitiveOptionImportDescriptorSet) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("custom_option.proto",
@@ -3140,13 +3140,15 @@ TEST_F(CommandLineInterfaceTest, NoWriteTransitiveOptionImportDescriptorSet) {
   FileDescriptorSet descriptor_set;
   ReadDescriptorSet("descriptor_set", &descriptor_set);
   if (HasFatalFailure()) return;
-  EXPECT_EQ(2, descriptor_set.file_size());
+  EXPECT_EQ(4, descriptor_set.file_size());
   if (descriptor_set.file(0).name() == "bar.proto") {
     std::swap(descriptor_set.mutable_file()->mutable_data()[0],
               descriptor_set.mutable_file()->mutable_data()[1]);
   }
   EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
-  EXPECT_EQ("bar.proto", descriptor_set.file(1).name());
+  EXPECT_EQ("google/protobuf/descriptor.proto", descriptor_set.file(1).name());
+  EXPECT_EQ("custom_option.proto", descriptor_set.file(2).name());
+  EXPECT_EQ("bar.proto", descriptor_set.file(3).name());
 }
 
 TEST_F(CommandLineInterfaceTest, DescriptorSetOptionRetention) {
