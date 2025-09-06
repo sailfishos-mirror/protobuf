@@ -87,6 +87,8 @@ namespace internal {
 PROTOBUF_EXPORT void GenericSwap(MessageLite* lhs, MessageLite* rhs);
 PROTOBUF_EXPORT void GenericSwap(Message* lhs, Message* rhs);
 
+struct PrivateAccess;
+
 class MessageCreator {
  public:
   using Func = void* (*)(const void*, void*, Arena*);
@@ -1343,6 +1345,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;
+  friend struct internal::PrivateAccess;
   friend struct internal::TcParseTableBase;
   friend class internal::UntypedMapBase;
   friend class internal::WeakFieldMap;

@@ -55,6 +55,7 @@ PROTOBUF_SHARED = [
     "codegen_traits.rs",
     "cord.rs",
     "enum.rs",
+    "extension.rs",
     "internal.rs",
     "map.rs",
     "prelude.rs",
@@ -70,6 +71,7 @@ PROTOBUF_SHARED = [
 # All Rust source files; this is used for packaging up a crate.
 ALL_RUST_SRCS = PROTOBUF_SHARED + [
     # go/keep-sorted start
+    "cpp_kernel/extension.rs",
     "cpp_kernel/interop.rs",
     "cpp_kernel/map.rs",
     "cpp_kernel/message.rs",
@@ -100,6 +102,7 @@ rust_library(
     name = "protobuf_upb",
     srcs = PROTOBUF_SHARED + [
         "upb_kernel/conversions.rs",
+        "upb_kernel/extension.rs",
         "upb_kernel/interop.rs",
         "upb_kernel/map.rs",
         "upb_kernel/message.rs",
@@ -120,6 +123,7 @@ rust_library(
     visibility = [":protobuf_internal"],
     deps = [
         "//rust/upb",
+        "@crate_index//:linkme",
     ],
 )
 
@@ -155,6 +159,7 @@ rust_library(
 rust_library(
     name = "protobuf_cpp",
     srcs = PROTOBUF_SHARED + [
+        "cpp_kernel/extension.rs",
         "cpp_kernel/interop.rs",
         "cpp_kernel/map.rs",
         "cpp_kernel/message.rs",
@@ -206,6 +211,7 @@ cc_library(
     srcs = [
         "cpp_kernel/compare.cc",
         "cpp_kernel/debug.cc",
+        "cpp_kernel/extension.cc",
         "cpp_kernel/map.cc",
         "cpp_kernel/message.cc",
         "cpp_kernel/repeated.cc",
