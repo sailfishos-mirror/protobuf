@@ -246,9 +246,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void Destroy() {
     ABSL_DCHECK(NeedsDestroy());
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+    ABSL_DCHECK_EQ(GetArena(), nullptr);
+#else
     // TODO: arena check is redundant once all `RepeatedPtrField`s
     // with non-null arena are owned by the arena.
     if (ABSL_PREDICT_FALSE(GetArena() != nullptr)) return;
+#endif
 
     using H = CommonHandler<TypeHandler>;
     int n = allocated_size();
@@ -600,9 +604,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 #endif
   }
 
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
     return PROTOBUF_FIELD_OFFSET(RepeatedPtrFieldBase, arena_);
   }
+#endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
  private:
   // Tests that need to access private methods.
@@ -1440,7 +1446,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   void InternalMergeFromWithArena(internal::InternalVisibility, Arena* arena,
                                   const RepeatedPtrField& other);
 
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   using RepeatedPtrFieldBase::InternalGetArenaOffset;
+#endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
  private:
   using InternalArenaConstructable_ = void;
