@@ -1036,10 +1036,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   Map(const Map& other) : Map(nullptr, other) {}
 
   // Internal Arena constructors: do not use!
+#ifndef PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR
   // TODO: remove non internal ctors
   explicit Map(Arena* arena) : Base(arena, GetTypeInfo()) {
     StaticValidityCheck();
   }
+#endif
   Map(internal::InternalVisibility, Arena* arena) : Map(arena) {}
   Map(internal::InternalVisibility, Arena* arena, const Map& other)
       : Map(arena, other) {}
@@ -1078,6 +1080,11 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
  private:
+#ifdef PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR
+  explicit Map(Arena* arena) : Base(arena, GetTypeInfo()) {
+    StaticValidityCheck();
+  }
+#endif
   Map(Arena* arena, const Map& other) : Map(arena) {
     StaticValidityCheck();
     CopyFromImpl(other);
