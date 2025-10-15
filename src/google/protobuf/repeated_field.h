@@ -107,8 +107,8 @@ class HeapRep {
 
   uint32_t capacity() const { return capacity_; }
 
-  const void* elements() const { return this + 1; }
-  void* elements() { return this + 1; }
+  const void* elements() const { return elements_; }
+  void* elements() { return elements_; }
 
  private:
   // Align to 8 as sanitizers are picky on the alignment of containers to start
@@ -123,6 +123,7 @@ class HeapRep {
     // power-of-two sized allocations, which enables Arena optimizations.
     char padding_[kMinSize];
   };
+  void* elements_[];
 };
 #else
 template <size_t kMinSize>
@@ -398,7 +399,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   constexpr RepeatedField();
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
   RepeatedField(const RepeatedField& rhs)
-      : RepeatedField(internal::InternalMetadataOffset(), rhs) {}
+      : RepeatedField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
+                      rhs) {}
 #else
   RepeatedField(const RepeatedField& rhs) : RepeatedField(nullptr, rhs) {}
 #endif
@@ -421,9 +423,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                           internal::InternalMetadataOffset offset)
       : RepeatedField(offset) {}
   RepeatedField(internal::InternalVisibility,
-                internal::InternalMetadataOffset offset,
+                internal::InternalMetadataOffset offset, Arena* arena,
                 const RepeatedField& rhs)
-      : RepeatedField(offset, rhs) {}
+      : RepeatedField(offset, arena, rhs) {}
 #else
   RepeatedField(internal::InternalVisibility, Arena* arena)
       : RepeatedField(arena) {}
@@ -437,7 +439,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
   RepeatedField(RepeatedField&& rhs) noexcept
-      : RepeatedField(internal::InternalMetadataOffset(), std::move(rhs)) {}
+      : RepeatedField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
+                      std::move(rhs)) {}
 #else
   RepeatedField(RepeatedField&& rhs) noexcept
       : RepeatedField(nullptr, std::move(rhs)) {}
@@ -643,9 +646,14 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
   explicit constexpr RepeatedField(internal::InternalMetadataOffset offset);
-  RepeatedField(internal::InternalMetadataOffset offset,
+  RepeatedField(internal::InternalMetadataOffset offset, Arena* arena)
+      : RepeatedField(offset) {
+    ABSL_DCHECK_EQ(arena, GetArena());
+  }
+  RepeatedField(internal::InternalMetadataOffset offset, Arena* arena,
                 const RepeatedField& rhs);
-  RepeatedField(internal::InternalMetadataOffset offset, RepeatedField&& rhs);
+  RepeatedField(internal::InternalMetadataOffset offset, Arena* arena,
+                RepeatedField&& rhs);
 #else
 #ifdef PROTOBUF_FUTURE_REMOVE_REPEATED_FIELD_ARENA_CONSTRUCTOR
   explicit RepeatedField(Arena* arena);
@@ -739,8 +747,11 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // the old container from `old_size` to `Capacity()` (unpoison memory)
   // directly before it is being released, and annotate the new container from
   // `Capacity()` to `old_size` (poison unused memory).
-  void Grow(bool was_soo, int old_size, int new_size);
-  void GrowNoAnnotate(bool was_soo, int old_size, int new_size);
+  void Grow(Arena* arena, bool was_soo, int old_size, int new_size);
+  void Grow(bool was_soo, int old_size, int new_size) {
+    Grow(GetArena(), was_soo, old_size, new_size);
+  }
+  void GrowNoAnnotate(Arena* arena, bool was_soo, int old_size, int new_size);
 
   // Annotates a change in size of this instance. This function should be called
   // with (capacity, old_size) after new memory has been allocated and filled
@@ -921,10 +932,8 @@ template <typename Element>
 inline RepeatedField<Element>::RepeatedField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
     internal::InternalMetadataOffset offset,
-#else
-    Arena* arena,
 #endif
-    const RepeatedField& rhs)
+    Arena* arena, const RepeatedField& rhs)
     :
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
       RepeatedField(offset)
@@ -932,13 +941,16 @@ inline RepeatedField<Element>::RepeatedField(
       soo_rep_(arena)
 #endif
 {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+  ABSL_DCHECK_EQ(arena, GetArena());
+#endif
   StaticValidityCheck();
   AnnotateSize(kSooCapacityElements, 0);
   const bool rhs_is_soo = rhs.is_soo();
   if (auto size = rhs.size(rhs_is_soo)) {
     bool is_soo = true;
     if (size > kSooCapacityElements) {
-      Grow(is_soo, 0, size);
+      Grow(arena, is_soo, 0, size);
       is_soo = false;
     }
     ExchangeCurrentSize(is_soo, size);
@@ -992,10 +1004,8 @@ template <typename Element>
 inline RepeatedField<Element>::RepeatedField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
     internal::InternalMetadataOffset offset,
-#else
-    Arena* arena,
 #endif
-    RepeatedField&& rhs)
+    Arena* arena, RepeatedField&& rhs)
     : RepeatedField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
           offset
@@ -1003,9 +1013,7 @@ inline RepeatedField<Element>::RepeatedField(
           arena
 #endif
       ) {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-  Arena* arena = GetArena();
-#endif
+  ABSL_DCHECK_EQ(arena, GetArena());
   if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
   } else {
@@ -1240,10 +1248,11 @@ inline void RepeatedField<Element>::AddInputIterator(Iter begin, Iter end) {
   Element* last = elem + capacity;
   UnpoisonBuffer();
 
+  Arena* arena = GetArena();
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
       size = first - elem;
-      GrowNoAnnotate(is_soo, size, size + 1);
+      GrowNoAnnotate(arena, is_soo, size, size + 1);
       is_soo = false;
       elem = unsafe_elements(is_soo);
       capacity = Capacity(is_soo);
@@ -1532,13 +1541,14 @@ void RepeatedField<Element>::Reserve(int new_size) {
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
 // amount of code bloat.
 template <typename Element>
-PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(bool was_soo,
+PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(Arena* arena,
+                                                              bool was_soo,
                                                               int old_size,
                                                               int new_size) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   const int old_capacity = Capacity(was_soo);
   ABSL_DCHECK_GT(new_size, old_capacity);
   HeapRep* new_rep;
-  Arena* arena = GetArena();
 
   new_size = internal::CalculateReserveSize<Element, kHeapRepHeaderSize>(
       old_capacity, new_size);
@@ -1603,10 +1613,11 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(bool was_soo,
 // However, as explained in b/266411038#comment9, this causes issues
 // in shared libraries for Youtube (and possibly elsewhere).
 template <typename Element>
-PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(bool was_soo, int old_size,
+PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(Arena* arena, bool was_soo,
+                                                    int old_size,
                                                     int new_size) {
   UnpoisonBuffer();
-  GrowNoAnnotate(was_soo, old_size, new_size);
+  GrowNoAnnotate(arena, was_soo, old_size, new_size);
   AnnotateSize(Capacity(), old_size);
 }
 

@@ -366,7 +366,8 @@ class RepeatedEnum : public FieldGeneratorBase {
               [p] { InternalMetadataOffsetFormatString(p); }}},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+              $name$_{visibility, ($internal_metadata_offset$), arena,
+                      from.$name$_}
 #else
               $name$_ { visibility, arena, from.$name$_ }
 #endif)cc");
