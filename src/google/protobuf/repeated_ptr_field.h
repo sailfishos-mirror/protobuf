@@ -185,6 +185,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       : tagged_rep_or_elem_(nullptr), current_size_(0) {}
   constexpr explicit RepeatedPtrFieldBase(InternalMetadataOffset offset)
       : tagged_rep_or_elem_(nullptr), current_size_(0), resolver_(offset) {}
+  RepeatedPtrFieldBase(InternalMetadataOffset offset, Arena* arena)
+      : RepeatedPtrFieldBase(offset) {
+    ABSL_DCHECK_EQ(arena, GetArena());
+  }
 #else
   constexpr RepeatedPtrFieldBase()
       : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(nullptr) {}
@@ -415,7 +419,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   void CloseGap(int start, int num);
 
-  void Reserve(int capacity, Arena* arena);
+  void ReserveWithArena(Arena* arena, int capacity);
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
@@ -1136,9 +1140,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
                              internal::InternalMetadataOffset offset)
       : RepeatedPtrField(offset) {}
   RepeatedPtrField(internal::InternalVisibility,
-                   internal::InternalMetadataOffset offset,
+                   internal::InternalMetadataOffset offset, Arena* arena,
                    const RepeatedPtrField& rhs)
-      : RepeatedPtrField(offset, rhs) {}
+      : RepeatedPtrField(offset, arena, rhs) {}
 
 #else
   RepeatedPtrField(internal::InternalVisibility, Arena* arena)
@@ -1166,17 +1170,16 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
       : RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
             internal::InternalMetadataOffset(),
-#else
-            /*arena=*/nullptr,
 #endif
-            rhs) {
+            /*arena=*/nullptr, rhs) {
   }
   RepeatedPtrField& operator=(const RepeatedPtrField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
-      : RepeatedPtrField(internal::InternalMetadataOffset(), std::move(rhs)) {}
+      : RepeatedPtrField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
+                         std::move(rhs)) {}
 #else
   RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
       : RepeatedPtrField(nullptr, std::move(rhs)) {}
@@ -1478,6 +1481,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   friend class DynamicMessage;
 
+  friend class google::protobuf::Reflection;
+
   friend class google::protobuf::internal::ExtensionSet;
 
   friend class internal::MapFieldBase;
@@ -1491,14 +1496,17 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // `RepeatedPtrFieldBase`.
   friend internal::MapFieldBase;
 
+  friend class internal::v2::TableDrivenParse;
+
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   using TypeHandler = internal::GenericTypeHandler<Element>;
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   constexpr explicit RepeatedPtrField(internal::InternalMetadataOffset offset);
-  RepeatedPtrField(internal::InternalMetadataOffset offset,
+  RepeatedPtrField(internal::InternalMetadataOffset offset, Arena* arena);
+  RepeatedPtrField(internal::InternalMetadataOffset offset, Arena* arena,
                    const RepeatedPtrField& rhs);
-  RepeatedPtrField(internal::InternalMetadataOffset offset,
+  RepeatedPtrField(internal::InternalMetadataOffset offset, Arena* arena,
                    RepeatedPtrField&& rhs);
 #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
@@ -1509,6 +1517,13 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 #endif
 #endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
+
+  pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
+  void AddWithArena(Arena* arena, Element&& value);
+
+  template <typename Iter>
+  void AddWithArena(Arena* arena, Iter begin, Iter end);
 
   void AddAllocatedWithArena(Arena* arena, Element* value);
 
@@ -1564,14 +1579,21 @@ constexpr
   // CreateMessage<RepeatedPtrField<T>> for incomplete Ts.
 }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+template <typename Element>
+inline RepeatedPtrField<Element>::RepeatedPtrField(
+    internal::InternalMetadataOffset offset, Arena* arena)
+    : RepeatedPtrFieldBase(offset) {
+  ABSL_DCHECK_EQ(arena, GetArena());
+}
+#endif
+
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
     internal::InternalMetadataOffset offset,
-#else
-    Arena* arena,
 #endif
-    const RepeatedPtrField& rhs)
+    Arena* arena, const RepeatedPtrField& rhs)
     : RepeatedPtrFieldBase(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
           offset
@@ -1580,7 +1602,8 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
 #endif
       ) {
   StaticValidityCheck();
-  MergeFrom(rhs);
+  if (rhs.empty()) return;
+  RepeatedPtrFieldBase::MergeFrom<Element>(rhs, arena);
 }
 
 template <typename Element>
@@ -1612,10 +1635,8 @@ template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
     internal::InternalMetadataOffset offset,
-#else
-    Arena* arena,
 #endif
-    RepeatedPtrField&& rhs)
+    Arena* arena, RepeatedPtrField&& rhs)
     : RepeatedPtrFieldBase(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
           offset
@@ -1623,11 +1644,9 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
           arena
 #endif
       ) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   // We don't just call Swap(&rhs) here because it would perform 3 copies if rhs
   // is on a different arena.
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-  Arena* arena = GetArena();
-#endif
   if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
   } else {
@@ -1689,23 +1708,35 @@ inline Element* RepeatedPtrField<Element>::Mutable(int index)
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::Add()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return RepeatedPtrFieldBase::Add<TypeHandler>(GetArena());
+  return AddWithArena(GetArena());
 }
 
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::InternalAddWithArena(
     internal::InternalVisibility, Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return AddWithArena(arena);
+}
+
+template <typename Element>
+PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::AddWithArena(
+    Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::Add<TypeHandler>(arena);
 }
 
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::Add(Element&& value) {
-  RepeatedPtrFieldBase::Add<TypeHandler>(GetArena(), std::move(value));
+  AddWithArena(GetArena(), std::move(value));
 }
 
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::InternalAddWithArena(
     internal::InternalVisibility, Arena* arena, Element&& value) {
+  AddWithArena(arena, std::move(value));
+}
+
+template <typename Element>
+PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
+    Arena* arena, Element&& value) {
   RepeatedPtrFieldBase::Add<TypeHandler>(arena, std::move(value));
 }
 
@@ -1713,14 +1744,21 @@ template <typename Element>
 template <typename Iter>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::Add(Iter begin,
                                                            Iter end) {
+  AddWithArena(GetArena(), std::move(begin), std::move(end));
+}
+
+template <typename Element>
+template <typename Iter>
+PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
+    Arena* arena, Iter begin, Iter end) {
   if (std::is_base_of<
           std::forward_iterator_tag,
           typename std::iterator_traits<Iter>::iterator_category>::value) {
     int reserve = static_cast<int>(std::distance(begin, end));
-    Reserve(size() + reserve);
+    ReserveWithArena(arena, size() + reserve);
   }
   for (; begin != end; ++begin) {
-    *Add() = *begin;
+    *AddWithArena(arena) = *begin;
   }
 }
 
@@ -1942,7 +1980,7 @@ inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {
-  return RepeatedPtrFieldBase::Reserve(new_size, GetArena());
+  return RepeatedPtrFieldBase::ReserveWithArena(GetArena(), new_size);
 }
 
 template <typename Element>
@@ -2014,7 +2052,7 @@ class RustRepeatedMessageHelper {
   }
 
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
-    field.Reserve(field.size() + additional, field.GetArena());
+    field.ReserveWithArena(field.GetArena(), field.size() + additional);
   }
 
   static const MessageLite& At(const RepeatedPtrFieldBase& field,
