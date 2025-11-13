@@ -125,6 +125,31 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "test_utils",
+    testonly = True,
+    srcs = ["test_utils.cc"],
+    hdrs = ["test_utils.h"],
+    visibility = [
+        "//pkg:__subpackages__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf"],
+)
+
+cc_test(
+    name = "test_utils_test",
+    srcs = ["test_utils_test.cc"],
+    deps = [
+        ":test_utils",
+        "//src/google/protobuf",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf:unittest_features_cc_proto",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "defaults_test",
     srcs = ["defaults_test.cc"],

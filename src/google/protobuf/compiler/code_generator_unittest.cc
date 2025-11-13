@@ -20,6 +20,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
+#include "editions/test_utils.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
@@ -85,16 +86,6 @@ class SimpleErrorCollector : public io::ErrorCollector {
     ABSL_LOG(ERROR) << absl::StrFormat("%d:%d:%s", line, column, message);
   }
 };
-
-const FeatureSetDefaults::FeatureSetEditionDefault* FindEditionDefault(
-    const FeatureSetDefaults& defaults, Edition edition) {
-  for (const auto& edition_default : defaults.defaults()) {
-    if (edition_default.edition() == edition) {
-      return &edition_default;
-    }
-  }
-  return nullptr;
-}
 
 class CodeGeneratorTest : public ::testing::Test {
  protected:
@@ -404,21 +395,6 @@ MATCHER_P(IsOkAndHolds, matcher, "") {
   return arg.ok() && ExplainMatchResult(matcher, *arg, result_listener);
 }
 
-TEST_F(CodeGeneratorTest, FindEditionDefault) {
-  TestGenerator generator;
-  auto result = generator.BuildFeatureSetDefaults();
-  ASSERT_TRUE(result.ok()) << result.status().message();
-  const auto* edition_defaults = FindEditionDefault(*result, EDITION_2023);
-  ASSERT_THAT(edition_defaults, NotNull());
-  EXPECT_EQ(edition_defaults->edition(), EDITION_2023);
-  EXPECT_EQ(edition_defaults->overridable_features()
-                .GetExtension(pb::test)
-                .file_feature(),
-            pb::EnumFeature::VALUE3);
-  EXPECT_NE(edition_defaults->edition(), EDITION_2024);
-  EXPECT_EQ(FindEditionDefault(*result, EDITION_99999_TEST_ONLY), nullptr);
-}
-
 TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsInvalidExtension) {
   TestGenerator generator;
   generator.set_feature_extensions({nullptr});
@@ -481,6 +457,20 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                   overridable_features {
                     field_presence: EXPLICIT
                     enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
+                  }
+                  fixed_features {}
+                }
+                defaults {
+                  edition: EDITION_UNSTABLE
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: SCOPED
                     repeated_field_encoding: PACKED
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED

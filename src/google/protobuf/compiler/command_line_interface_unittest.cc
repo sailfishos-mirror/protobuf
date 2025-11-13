@@ -24,6 +24,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "editions/test_utils.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/unittest_invalid_features.pb.h"
 
@@ -2268,6 +2269,20 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
       }
       fixed_features {}
     }
+    defaults {
+      edition: EDITION_UNSTABLE
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: SCOPED
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE2024
+        default_symbol_visibility: EXPORT_TOP_LEVEL
+      }
+      fixed_features {}
+    }
     minimum_edition: EDITION_PROTO2
     maximum_edition: EDITION_2024
   )pb"));
@@ -2341,6 +2356,20 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                   }
                   fixed_features {}
                 }
+                defaults {
+                  edition: EDITION_UNSTABLE
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: SCOPED
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
+                  }
+                  fixed_features {}
+                }
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_99997_TEST_ONLY
               )pb"));
@@ -2358,15 +2387,14 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithUnstable) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_EQ(defaults.defaults_size(), 5);
-  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_UNSTABLE);
-  EXPECT_EQ(defaults.defaults(4)
-                .overridable_features()
+  const FeatureSetDefaults::FeatureSetEditionDefault* unstable_defaults =
+      FindEditionDefault(defaults, EDITION_UNSTABLE);
+  EXPECT_EQ(unstable_defaults->edition(), EDITION_UNSTABLE);
+  EXPECT_EQ(unstable_defaults->overridable_features()
                 .GetExtension(pb::test)
                 .new_unstable_feature(),
             pb::UnstableEnumFeature::UNSTABLE2);
-  EXPECT_EQ(defaults.defaults(4)
-                .overridable_features()
+  EXPECT_EQ(unstable_defaults->overridable_features()
                 .GetExtension(pb::test)
                 .unstable_existing_feature(),
             pb::UnstableEnumFeature::UNSTABLE3);
@@ -2441,6 +2469,20 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                   }
                   fixed_features {}
                 }
+                defaults {
+                  edition: EDITION_UNSTABLE
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: SCOPED
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
+                  }
+                  fixed_features {}
+                }
                 minimum_edition: EDITION_99997_TEST_ONLY
                 maximum_edition: EDITION_99999_TEST_ONLY
               )pb"));
@@ -2461,40 +2503,45 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
-  ASSERT_EQ(defaults.defaults_size(), 8);
-  EXPECT_EQ(defaults.defaults(0).edition(), EDITION_LEGACY);
-  EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
-  EXPECT_EQ(defaults.defaults(3).edition(), EDITION_2024);
-  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_UNSTABLE);
-  EXPECT_EQ(defaults.defaults(5).edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults.defaults(6).edition(), EDITION_99998_TEST_ONLY);
-  EXPECT_EQ(defaults.defaults(0)
-                .fixed_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_LEGACY)->edition(),
+            EDITION_LEGACY);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2023)->edition(),
+            EDITION_2023);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2024)->edition(),
+            EDITION_2024);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_UNSTABLE)->edition(),
+            EDITION_UNSTABLE);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99997_TEST_ONLY)->edition(),
+            EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99998_TEST_ONLY)->edition(),
+            EDITION_99998_TEST_ONLY);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_LEGACY)
+                ->fixed_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE1);
-  EXPECT_EQ(defaults.defaults(2)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2023)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE3);
-  EXPECT_EQ(defaults.defaults(3)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2024)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE3);
-  EXPECT_EQ(defaults.defaults(4)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_UNSTABLE)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .new_unstable_feature(),
             pb::UnstableEnumFeature::UNSTABLE2);
-  EXPECT_EQ(defaults.defaults(5)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99997_TEST_ONLY)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE4);
-  EXPECT_EQ(defaults.defaults(6)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99998_TEST_ONLY)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE5);
