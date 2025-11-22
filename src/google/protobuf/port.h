@@ -665,6 +665,22 @@ inline bool IsMemoryPoisoned([[maybe_unused]] const void* p) {
 #endif
 }
 
+inline constexpr bool ShouldBatchSingularString() {
+#ifdef PROTOBUF_INTERNAL_BATCH_SINGULAR_STRING
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool ShouldBatchRepeatedString() {
+#ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_STRING
+  return true;
+#else
+  return false;
+#endif
+}
+
 #if defined(ABSL_HAVE_THREAD_SANITIZER)
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
