@@ -401,6 +401,11 @@ constexpr absl::optional<uintptr_t> EncodePlacementArenaOffsets(
 // message classes without making them public. This is useful for highly
 // optimized code paths that need to access internals.
 struct PrivateAccess {
+  template <int number, typename T>
+  static auto& MutableLazy(T& msg) {
+    return msg._lazy_internal_mutable(std::integral_constant<int, number>{});
+  }
+
   template <typename T>
   static auto& GetExtensionSet(T& msg) {
     return msg._impl_._extensions_;
