@@ -1,6 +1,6 @@
 """cc_proto_library rule"""
 
-load("//bazel/private:bazel_cc_proto_library.bzl", _cc_proto_library = "cc_proto_library")  # buildifier: disable=bzl-visibility
+load("//bazel/private/oss:cc_proto_library.bzl", _cc_proto_library = "cc_proto_library")
 
 def cc_proto_library(**kwattrs):
     # Only use Starlark rules when they are removed from Bazel
