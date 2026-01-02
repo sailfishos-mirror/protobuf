@@ -13,6 +13,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 DIRECT_DEPS_FLAG_TEMPLATE = (
@@ -177,11 +178,11 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
 
     args = ctx.actions.args()
 
-    if ctx.attr._experimental_proto_descriptor_sets_include_source_info[BuildSettingInfo].value:
+    if get_flag_value(ctx, "experimental_proto_descriptor_sets_include_source_info"):
         args.add("--include_source_info")
     args.add("--retain_options")
 
-    strict_deps = ctx.attr._strict_proto_deps[BuildSettingInfo].value
+    strict_deps = get_flag_value(ctx, "strict_proto_deps")
     if strict_deps:
         if proto_info.direct_sources:
             # Direct sources can be option imported in addition to `deps`.
@@ -223,7 +224,7 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
         # Set `-option_dependencies_violation_msg=`
         args.add(ctx.label, format = OPTION_DEPS_FLAG_TEMPLATE)
 
-    strict_imports = ctx.attr._strict_public_imports[BuildSettingInfo].value
+    strict_imports = get_flag_value(ctx, "strict_public_imports")
     if strict_imports:
         public_import_protos = depset(transitive = [export.check_deps_sources for export in exports])
         if not public_import_protos:
@@ -249,7 +250,7 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
             mnemonic = "GenProtoDescriptorSet",
             progress_message = "Generating Descriptor Set proto_library %{label}",
             proto_compiler = ctx.executable._proto_compiler,
-            protoc_opts = ctx.fragments.proto.experimental_protoc_opts,
+            protoc_opts = get_flag_value(ctx, "protocopt"),
             plugin = None,
         )
 
@@ -299,6 +300,9 @@ See documentation in <code>proto_info.bzl</code>.
 </ul>
 """ + _extra_doc,
     attrs = {
+        "_protocopt": attr.label(
+            default = "//bazel/flags/cc:protocopt",
+        ),
         "srcs": attr.label_list(
             allow_files = [".proto", ".protodevel"],
             flags = ["DIRECT_COMPILE_TIME_INPUT"],
@@ -382,15 +386,30 @@ for use with MessageSet.
         ),
         # buildifier: disable=attr-license (calling attr.license())
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
+        "_proto_compiler": attr.label(
+            default = "//bazel/flags:proto_compiler",
+        ),
         "_experimental_proto_descriptor_sets_include_source_info": attr.label(
-            default = "//bazel/private:experimental_proto_descriptor_sets_include_source_info",
+            default = "//bazel/flags:experimental_proto_descriptor_sets_include_source_info",
         ),
         "_strict_proto_deps": attr.label(
             default =
-                "//bazel/private:strict_proto_deps",
+                "//bazel/flags:strict_proto_deps",
         ),
         "_strict_public_imports": attr.label(
-            default = "//bazel/private:strict_public_imports",
+            default = "//bazel/flags:strict_public_imports",
+        ),
+        "_proto_toolchain_for_cc": attr.label(
+            default = "//bazel/flags/cc:proto_toolchain_for_cc",
+        ),
+        "_proto_toolchain_for_java": attr.label(
+            default = "//bazel/flags/java:proto_toolchain_for_java",
+        ),
+        "_proto_toolchain_for_javalite": attr.label(
+            default = "//bazel/flags/java/lite:proto_toolchain_for_javalite",
+        ),
+        "_proto_toolchain_for_j2objc": attr.label(
+            default = "//bazel/flags/j2objc:proto_toolchain_for_j2objc",
         ),
     } | toolchains.if_legacy_toolchain({
         "_proto_compiler": attr.label(
