@@ -66,23 +66,23 @@ public abstract class GeneratedMessageLite<
   /** For use by generated code only. Lazily initialized to reduce allocations. */
   protected UnknownFieldSetLite unknownFields = UnknownFieldSetLite.getDefaultInstance();
 
-  boolean isMutable() {
+  final boolean isMutable() {
     return (memoizedSerializedSize & MUTABLE_FLAG_MASK) != 0;
   }
 
-  void markImmutable() {
+  final void markImmutable() {
     memoizedSerializedSize &= ~MUTABLE_FLAG_MASK;
   }
 
-  int getMemoizedHashCode() {
+  final int getMemoizedHashCode() {
     return memoizedHashCode;
   }
 
-  void setMemoizedHashCode(int value) {
+  final void setMemoizedHashCode(int value) {
     memoizedHashCode = value;
   }
 
-  void clearMemoizedHashCode() {
+  final void clearMemoizedHashCode() {
     memoizedHashCode = UNINITIALIZED_HASH_CODE;
   }
 
