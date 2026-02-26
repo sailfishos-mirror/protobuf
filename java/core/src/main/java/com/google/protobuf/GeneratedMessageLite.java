@@ -74,19 +74,19 @@ public abstract class GeneratedMessageLite<
     memoizedSerializedSize &= ~MUTABLE_FLAG_MASK;
   }
 
-  int getMemoizedHashCode() {
+  final int getMemoizedHashCode() {
     return memoizedHashCode;
   }
 
-  void setMemoizedHashCode(int value) {
+  final void setMemoizedHashCode(int value) {
     memoizedHashCode = value;
   }
 
-  void clearMemoizedHashCode() {
+  final void clearMemoizedHashCode() {
     memoizedHashCode = UNINITIALIZED_HASH_CODE;
   }
 
-  boolean hashCodeIsNotMemoized() {
+  final boolean hashCodeIsNotMemoized() {
     return UNINITIALIZED_HASH_CODE == getMemoizedHashCode();
   }
 
@@ -109,7 +109,7 @@ public abstract class GeneratedMessageLite<
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
-  MessageType newMutableInstance() {
+  final MessageType newMutableInstance() {
     return (MessageType) dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE, null, null);
   }
 
@@ -143,7 +143,7 @@ public abstract class GeneratedMessageLite<
     return getMemoizedHashCode();
   }
 
-  int computeHashCode() {
+  final int computeHashCode() {
     return Protobuf.getInstance().schemaFor(this).hashCode(this);
   }
 
@@ -182,7 +182,7 @@ public abstract class GeneratedMessageLite<
    *
    * @return {@code true} unless the tag is an end-group tag.
    */
-  protected boolean parseUnknownField(int tag, CodedInputStream input) throws IOException {
+  protected final boolean parseUnknownField(int tag, CodedInputStream input) throws IOException {
     // This will avoid the allocation of unknown fields when a group tag is encountered.
     if (WireFormat.getTagWireType(tag) == WireFormat.WIRETYPE_END_GROUP) {
       return false;
@@ -193,13 +193,13 @@ public abstract class GeneratedMessageLite<
   }
 
   /** Called by subclasses to parse an unknown field. For use by generated code only. */
-  protected void mergeVarintField(int tag, int value) {
+  protected final void mergeVarintField(int tag, int value) {
     ensureUnknownFieldsInitialized();
     unknownFields.mergeVarintField(tag, value);
   }
 
   /** Called by subclasses to parse an unknown field. For use by generated code only. */
-  protected void mergeLengthDelimitedField(int fieldNumber, ByteString value) {
+  protected final void mergeLengthDelimitedField(int fieldNumber, ByteString value) {
     ensureUnknownFieldsInitialized();
     unknownFields.mergeLengthDelimitedField(fieldNumber, value);
   }
