@@ -74,19 +74,19 @@ public abstract class GeneratedMessageLite<
     memoizedSerializedSize &= ~MUTABLE_FLAG_MASK;
   }
 
-  int getMemoizedHashCode() {
+  final int getMemoizedHashCode() {
     return memoizedHashCode;
   }
 
-  void setMemoizedHashCode(int value) {
+  final void setMemoizedHashCode(int value) {
     memoizedHashCode = value;
   }
 
-  void clearMemoizedHashCode() {
+  final void clearMemoizedHashCode() {
     memoizedHashCode = UNINITIALIZED_HASH_CODE;
   }
 
-  boolean hashCodeIsNotMemoized() {
+  final boolean hashCodeIsNotMemoized() {
     return UNINITIALIZED_HASH_CODE == getMemoizedHashCode();
   }
 
@@ -109,7 +109,7 @@ public abstract class GeneratedMessageLite<
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
-  MessageType newMutableInstance() {
+  final MessageType newMutableInstance() {
     return (MessageType) dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE, null, null);
   }
 
