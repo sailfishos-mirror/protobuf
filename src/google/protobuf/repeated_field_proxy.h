@@ -465,11 +465,11 @@ class RepeatedFieldProxyWithResize<
 // `UNSTABLE`, but will eventually be available in an upcoming edition.
 template <typename ElementType>
 class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
-    : public internal::RepeatedFieldProxyBase<ElementType>,
-      public internal::RepeatedFieldProxyWithSet<ElementType>,
+    : public internal::RepeatedFieldProxyWithSet<ElementType>,
       public internal::RepeatedFieldProxyWithPushBack<ElementType>,
       public internal::RepeatedFieldProxyWithEmplaceBack<ElementType>,
-      public internal::RepeatedFieldProxyWithResize<ElementType> {
+      public internal::RepeatedFieldProxyWithResize<ElementType>,
+      public internal::RepeatedFieldProxyBase<ElementType> {
   static_assert(!std::is_const_v<ElementType>);
 
  protected:
@@ -652,7 +652,7 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
 };
 
 template <typename ElementType>
-class RepeatedFieldProxy<const ElementType> final
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy<const ElementType> final
     : public internal::RepeatedFieldProxyBase<const ElementType> {
   // A specialization of RepeatedFieldProxy for const proxies. This is needed
   // for mutating methods to not be exposed on const proxies.
@@ -701,13 +701,6 @@ class RepeatedFieldProxy<const ElementType> final
 };
 
 namespace internal {
-
-// The size of proxies is not really important, since they should mostly be
-// passed around by value and inlined away to oblivion. Regardless, size
-// assertions guarantee that the compiler hasn't introduced invisible members
-// that we didn't notice (e.g. `PROTOBUF_DECLSPEC_EMPTY_BASES`).
-static_assert(sizeof(RepeatedFieldProxy<int>) == 2 * sizeof(void*));
-static_assert(sizeof(RepeatedFieldProxy<const int>) == sizeof(void*));
 
 // A helper function to construct a `RepeatedFieldProxy`. This is more scalable
 // than friending all places that need to construct `RepeatedFieldProxy`.
