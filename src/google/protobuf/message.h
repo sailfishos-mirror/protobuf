@@ -975,6 +975,8 @@ class PROTOBUF_EXPORT Reflection final {
   [[nodiscard]] [[deprecated(
       "Please use GetRepeatedFieldRef() instead")]] const RepeatedField<T>&
   GetRepeatedField(const Message& msg, const FieldDescriptor* d) const {
+    ABSL_DCHECK_EQ(d->CalculateCppRepeatedType(),
+                   FieldDescriptor::CppRepeatedType::kRepeated);
     return GetRepeatedFieldInternal<T>(msg, d);
   }
 
@@ -985,6 +987,8 @@ class PROTOBUF_EXPORT Reflection final {
   [[deprecated(
       "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedField<T>*
   MutableRepeatedField(Message* msg, const FieldDescriptor* d) const {
+    ABSL_DCHECK_EQ(d->CalculateCppRepeatedType(),
+                   FieldDescriptor::CppRepeatedType::kRepeated);
     return MutableRepeatedFieldInternal<T>(msg, d);
   }
 
@@ -996,6 +1000,8 @@ class PROTOBUF_EXPORT Reflection final {
   [[nodiscard]] [[deprecated(
       "Please use GetRepeatedFieldRef() instead")]] const RepeatedPtrField<T>&
   GetRepeatedPtrField(const Message& msg, const FieldDescriptor* d) const {
+    ABSL_DCHECK_EQ(d->CalculateCppRepeatedType(),
+                   FieldDescriptor::CppRepeatedType::kRepeated);
     return GetRepeatedPtrFieldInternal<T>(msg, d);
   }
 
@@ -1007,6 +1013,8 @@ class PROTOBUF_EXPORT Reflection final {
   [[deprecated(
       "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedPtrField<T>*
   MutableRepeatedPtrField(Message* msg, const FieldDescriptor* d) const {
+    ABSL_DCHECK_EQ(d->CalculateCppRepeatedType(),
+                   FieldDescriptor::CppRepeatedType::kRepeated);
     return MutableRepeatedPtrFieldInternal<T>(msg, d);
   }
 
