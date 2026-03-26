@@ -26,6 +26,7 @@
 #include "google/protobuf/pyext/repeated_composite_container.h"
 #include "google/protobuf/pyext/repeated_scalar_container.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "google/protobuf/pyext/weak_value_map.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
@@ -124,8 +125,9 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     return cmessage::InternalGetScalar(self->parent->message, descriptor);
   }
 
-  if (PyObject* value =
-          self->parent->composite_fields->Get(descriptor, nullptr)) {
+  CMessage::CompositeFieldsMap* parent_fields =
+      self->parent->composite_fields.Get();
+  if (PyObject* value = parent_fields->Get(descriptor, nullptr)) {
     return value;
   }
 
@@ -138,7 +140,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       return nullptr;
     }
     PyObject* value = sub_message->AsPyObject();
-    self->parent->composite_fields->TrySet(descriptor, value);
+    parent_fields->TrySet(descriptor, value);
     return value;
   }
 
@@ -168,7 +170,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
         return nullptr;
       }
       PyObject* value = py_container->AsPyObject();
-      self->parent->composite_fields->TrySet(descriptor, value);
+      parent_fields->TrySet(descriptor, value);
       return value;
     } else {
       ContainerBase* py_container =
@@ -177,7 +179,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
         return nullptr;
       }
       PyObject* value = py_container->AsPyObject();
-      self->parent->composite_fields->TrySet(descriptor, value);
+      parent_fields->TrySet(descriptor, value);
       return value;
     }
   }
