@@ -30,6 +30,7 @@
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/flags/flag.h"
 #include "absl/hash/hash_testing.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -39,6 +40,7 @@
 #include "absl/synchronization/barrier.h"
 #include "absl/types/optional.h"
 #include "absl/utility/utility.h"
+#include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
@@ -2514,6 +2516,48 @@ TEST(ArenaPtrTest, ClassIsABIEfficient) {
   EXPECT_LE(sizeof(Arena::Ptr<TestAllTypes>), 2 * sizeof(void*));
 }
 
+
+static void BM_SerialArenaAlloc(benchmark::State& state) {
+  const int n_allocs = state.range(0);
+
+  ABSL_CHECK_EQ((n_allocs % 10), 0);
+  int n_allocs_div_10 = n_allocs / 10;
+
+  char mem[1024];
+  for (auto s : state) {
+    internal::ThreadSafeArena arena(mem, sizeof(mem));
+    Impl_SerialArenaAlloc(internal::ArenaBenchmark::GetSerialArena(arena),
+                          n_allocs_div_10);
+  }
+}
+BENCHMARK(BM_SerialArenaAlloc)->Arg(0)->Arg(10)->Arg(100);
+
+namespace {
+enum WithArena : bool { kNoArena = false, kArena = true };
+}  // namespace
+
+template <WithArena kWithArena>
+static void BM_RepeatedStringAdd(benchmark::State& state) {
+  const auto count = static_cast<size_t>(state.range(0));
+  const std::string long_string(sizeof(std::string), 'a');
+  for (auto s : state) {
+    Arena arena;
+    auto res =
+        MakeArenaSafeUnique<TestRepeatedString>(kWithArena ? &arena : nullptr);
+    for (uint32_t i = 0; i < count; ++i) {
+      *res->add_repeated_string1() = "aaa";
+      *res->add_repeated_string2() = long_string;
+
+      *res->add_repeated_bytes11() = "aaa";
+      *res->add_repeated_bytes12() = long_string;
+    }
+  }
+}
+
+BENCHMARK(BM_RepeatedStringAdd<kArena>)->Arg(0)->Arg(10)->Arg(100);
+BENCHMARK(BM_RepeatedStringAdd<kNoArena>)->Arg(0)->Arg(10)->Arg(100);
+
+
 
 }  // namespace protobuf
 }  // namespace google

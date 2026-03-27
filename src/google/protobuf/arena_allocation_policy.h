@@ -8,12 +8,20 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_ALLOCATION_POLICY_H__
 #define GOOGLE_PROTOBUF_ARENA_ALLOCATION_POLICY_H__
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 
 namespace google {
 namespace protobuf {
 namespace internal {
+
+// Configuration param for recording the maximum block size.
+//
+// TODO: the variable below and its associated functionality are
+// experimental and would be removed once the experiment is done.
+extern std::atomic<size_t> g_experimental_default_max_block_size;
+void SetExperimentalMaxBlockSize(size_t value);
 
 // `AllocationPolicy` defines `Arena` allocation policies. Applications can
 // customize the initial and maximum sizes for arena allocation, as well as set
@@ -22,17 +30,22 @@ namespace internal {
 // public configuration class such as `ArenaOptions`.
 struct AllocationPolicy {
   static constexpr size_t kDefaultStartBlockSize = 256;
-  static constexpr size_t kDefaultMaxBlockSize = 32 << 10;
+  static constexpr size_t kCurrentDefaultMaxBlockSize = 32 << 10;
+
+  static size_t DefaultMaxBlockSize() {
+    return g_experimental_default_max_block_size.load(
+        std::memory_order_relaxed);
+  }
 
   size_t start_block_size = kDefaultStartBlockSize;
-  size_t max_block_size = kDefaultMaxBlockSize;
+  size_t max_block_size = DefaultMaxBlockSize();
 
   void* (*block_alloc)(size_t) = nullptr;
   void (*block_dealloc)(void*, size_t) = nullptr;
 
   bool IsDefault() const {
     return start_block_size == kDefaultStartBlockSize &&
-           max_block_size == kDefaultMaxBlockSize && block_alloc == nullptr &&
+           max_block_size == DefaultMaxBlockSize() && block_alloc == nullptr &&
            block_dealloc == nullptr;
   }
 };
