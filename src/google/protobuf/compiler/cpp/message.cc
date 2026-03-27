@@ -2183,15 +2183,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             CopyFrom(from);
             return *this;
           }
-          inline $classname$& operator=($classname$&& from) noexcept {
-            if (this == &from) return *this;
-            if ($pbi$::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-              InternalSwap(&from);
-            } else {
-              CopyFrom(from);
-            }
-            return *this;
-          }
+          $classname$& operator=($classname$&& from) noexcept;
           $decl_verify_func$;
 
           $nodiscard $inline const $unknown_fields_type$& unknown_fields() const
@@ -2215,19 +2207,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           static constexpr int kIndexInFileMessages = $index_in_file_messages$;
           $decl_any_methods$;
           friend void swap($classname$& a, $classname$& b) { a.Swap(&b); }
-          inline void Swap($classname$* $nonnull$ other) {
-            if (other == this) return;
-            if ($pbi$::CanUseInternalSwap(GetArena(), other->GetArena())) {
-              InternalSwap(other);
-            } else {
-              $pbi$::GenericSwap(this, other);
-            }
-          }
-          void UnsafeArenaSwap($classname$* $nonnull$ other) {
-            if (other == this) return;
-            $DCHK$(GetArena() == other->GetArena());
-            InternalSwap(other);
-          }
+          void Swap($classname$* $nonnull$ other);
+          void UnsafeArenaSwap($classname$* $nonnull$ other);
 
           // implements Message ----------------------------------------------
 
@@ -2519,6 +2500,32 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   GenerateVerify(p);
 
   GenerateSwap(p);
+  p->Emit("\n");
+
+  p->Emit(R"cc(
+    void $classname$::Swap($classname$* $nonnull$ other) {
+      if (other == this) return;
+      if ($pbi$::CanUseInternalSwap(GetArena(), other->GetArena())) {
+        InternalSwap(other);
+      } else {
+        $pbi$::GenericSwap(this, other);
+      }
+    }
+    void $classname$::UnsafeArenaSwap($classname$* $nonnull$ other) {
+      if (other == this) return;
+      $DCHK$(GetArena() == other->GetArena());
+      InternalSwap(other);
+    }
+    $classname$& $classname$::operator=($classname$&& from) noexcept {
+      if (this == &from) return *this;
+      if ($pbi$::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+        InternalSwap(&from);
+      } else {
+        CopyFrom(from);
+      }
+      return *this;
+    }
+  )cc");
   p->Emit("\n");
 
   p->Emit({{"annotate_accessor_definition",
