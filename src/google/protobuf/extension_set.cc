@@ -41,6 +41,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
+
 // must be last.
 #include "google/protobuf/port_def.inc"
 
@@ -236,10 +237,6 @@ bool ExtensionSet::HasLazy(int number) const {
   return Has(number) && FindOrNull(number)->is_lazy;
 }
 
-bool ExtensionSet::LazyHasUnparsed(int number) const {
-  ABSL_DCHECK(HasLazy(number));
-  return FindOrNull(number)->ptr.lazymessage_value->HasUnparsed();
-}
 
 int ExtensionSet::NumExtensions() const {
   int result = 0;
@@ -378,8 +375,8 @@ size_t ExtensionSet::GetMessageByteSizeLong(int number) const {
   const Extension* extension = FindOrNull(number);
   ABSL_CHECK(extension != nullptr) << "not present";
   ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
-  return extension->is_lazy ? extension->ptr.lazymessage_value->ByteSizeLong()
-                            : extension->ptr.message_value->ByteSizeLong();
+
+  return extension->ptr.message_value->ByteSizeLong();
 }
 
 uint8_t* ExtensionSet::InternalSerializeMessage(
@@ -389,10 +386,6 @@ uint8_t* ExtensionSet::InternalSerializeMessage(
   ABSL_CHECK(extension != nullptr) << "not present";
   ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
 
-  if (extension->is_lazy) {
-    return extension->ptr.lazymessage_value->WriteMessageToArray(
-        prototype, number, target, stream);
-  }
 
   const auto* msg = extension->ptr.message_value;
   return WireFormatLite::InternalWriteMessage(
@@ -455,11 +448,7 @@ const MessageLite& ExtensionSet::GetMessage(
     return default_value;
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
-    if (extension->is_lazy) {
-      return extension->ptr.lazymessage_value->GetMessage(default_value, arena);
-    } else {
-      return *extension->ptr.message_value;
-    }
+    return *extension->ptr.message_value;
   }
 }
 
@@ -485,11 +474,7 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     extension->is_cleared = false;
-    if (extension->is_lazy) {
-      return extension->ptr.lazymessage_value->MutableMessage(prototype, arena);
-    } else {
-      return extension->ptr.message_value;
-    }
+    return extension->ptr.message_value;
   }
 }
 
@@ -528,7 +513,6 @@ void ExtensionSet::SetAllocatedMessage(Arena* arena, int number, FieldType type,
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
-      extension->ptr.lazymessage_value->SetAllocatedMessage(message, arena);
     } else {
       if (arena == nullptr) {
         delete extension->ptr.message_value;
@@ -565,8 +549,6 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
-      extension->ptr.lazymessage_value->UnsafeArenaSetAllocatedMessage(message,
-                                                                       arena);
     } else {
       if (arena == nullptr) {
         delete extension->ptr.message_value;
@@ -587,10 +569,6 @@ MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
-      ret = extension->ptr.lazymessage_value->ReleaseMessage(prototype, arena);
-      if (arena == nullptr) {
-        delete extension->ptr.lazymessage_value;
-      }
     } else {
       if (arena == nullptr) {
         ret = extension->ptr.message_value;
@@ -616,11 +594,6 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
-      ret = extension->ptr.lazymessage_value->UnsafeArenaReleaseMessage(
-          prototype, arena);
-      if (arena == nullptr) {
-        delete extension->ptr.lazymessage_value;
-      }
     } else {
       ret = extension->ptr.message_value;
     }
@@ -910,9 +883,6 @@ void ExtensionSet::InternalExtensionMergeFromIntoUninitializedExtension(
       break;
     case WireFormatLite::CPPTYPE_MESSAGE: {
       if (other_extension.is_lazy) {
-        dst_extension.ptr.lazymessage_value =
-            other_extension.ptr.lazymessage_value->Clone(
-                arena, *other_extension.ptr.lazymessage_value, other_arena);
       } else {
         dst_extension.ptr.message_value =
             other_extension.ptr.message_value->New(arena);
@@ -992,20 +962,8 @@ void ExtensionSet::InternalExtensionMergeFrom(Arena* arena,
       ABSL_DCHECK_EQ(dst_extension->is_packed, other_extension.is_packed);
       ABSL_DCHECK(!dst_extension->is_repeated);
       if (other_extension.is_lazy) {
-        if (dst_extension->is_lazy) {
-          dst_extension->ptr.lazymessage_value->MergeFrom(
-              GetPrototypeForLazyMessage(extendee, number),
-              *other_extension.ptr.lazymessage_value, arena, other_arena);
-        } else {
-          dst_extension->ptr.message_value->CheckTypeAndMergeFrom(
-              other_extension.ptr.lazymessage_value->GetMessage(
-                  *dst_extension->ptr.message_value, other_arena));
-        }
       } else {
         if (dst_extension->is_lazy) {
-          dst_extension->ptr.lazymessage_value
-              ->MutableMessage(*other_extension.ptr.message_value, arena)
-              ->CheckTypeAndMergeFrom(*other_extension.ptr.message_value);
         } else {
           dst_extension->ptr.message_value->CheckTypeAndMergeFrom(
               *other_extension.ptr.message_value);
@@ -1284,7 +1242,6 @@ void ExtensionSet::Extension::Clear() {
           break;
         case WireFormatLite::CPPTYPE_MESSAGE:
           if (is_lazy) {
-            ptr.lazymessage_value->Clear();
           } else {
             ptr.message_value->Clear();
           }
@@ -1417,8 +1374,7 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
 #undef HANDLE_TYPE
       case WireFormatLite::TYPE_MESSAGE: {
         result += WireFormatLite::LengthDelimitedSize(
-            is_lazy ? ptr.lazymessage_value->ByteSizeLong()
-                    : ptr.message_value->ByteSizeLong());
+            ptr.message_value->ByteSizeLong());
         break;
       }
 
@@ -1495,7 +1451,6 @@ void ExtensionSet::Extension::Free() {
         break;
       case WireFormatLite::CPPTYPE_MESSAGE:
         if (is_lazy) {
-          delete ptr.lazymessage_value;
         } else {
           delete ptr.message_value;
         }
@@ -1525,17 +1480,9 @@ bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
 
   if (is_cleared) return true;
 
-  if (!is_lazy) return ptr.message_value->IsInitialized();
 
-  const MessageLite* prototype =
-      ext_set->GetPrototypeForLazyMessage(extendee, number);
-  ABSL_DCHECK_NE(prototype, nullptr)
-      << "extendee: " << extendee->GetTypeName() << "; number: " << number;
-  return ptr.lazymessage_value->IsInitialized(prototype, arena);
+  return ptr.message_value->IsInitialized();
 }
-
-// Dummy key method to avoid weak vtable.
-void ExtensionSet::LazyMessageExtension::UnusedKeyMethod() {}
 
 const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
   if (flat_size_ == 0) {
@@ -1828,10 +1775,6 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
         break;
       case WireFormatLite::TYPE_MESSAGE:
         if (is_lazy) {
-          const auto* prototype =
-              extension_set->GetPrototypeForLazyMessage(extendee, number);
-          target = ptr.lazymessage_value->WriteMessageToArray(prototype, number,
-                                                              target, stream);
         } else {
           target = WireFormatLite::InternalWriteMessage(
               number, *ptr.message_value, ptr.message_value->GetCachedSize(),
@@ -1878,10 +1821,6 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
       WireFormatLite::kMessageSetTypeIdNumber, number, target);
   // Write message.
   if (is_lazy) {
-    const auto* prototype =
-        extension_set->GetPrototypeForLazyMessage(extendee, number);
-    target = ptr.lazymessage_value->WriteMessageToArray(
-        prototype, WireFormatLite::kMessageSetMessageNumber, target, stream);
   } else {
     target = WireFormatLite::InternalWriteMessage(
         WireFormatLite::kMessageSetMessageNumber, *ptr.message_value,
@@ -1909,11 +1848,8 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
   our_size += io::CodedOutputStream::VarintSize32(number);
 
   // message
-  our_size += WireFormatLite::LengthDelimitedSize(
-      is_lazy ? ptr.lazymessage_value->ByteSizeLong()
-              : ptr.message_value->ByteSizeLong());
-
-  return our_size;
+  return our_size +
+         WireFormatLite::LengthDelimitedSize(ptr.message_value->ByteSizeLong());
 }
 
 size_t ExtensionSet::MessageSetByteSize() const {
@@ -1935,9 +1871,8 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
-
-std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena * arena)>
-    ExtensionSet::maybe_create_lazy_extension_;
+LazyField* ExtensionSet::MaybeCreateLazyExtension(Arena* arena) {
+}
 
 }  // namespace internal
 }  // namespace protobuf
