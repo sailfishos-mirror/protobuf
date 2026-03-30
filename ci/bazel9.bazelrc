@@ -1,1 +1,7 @@
 build --incompatible_exclude_starlark_flags_from_exec_config
+# TODO: Remove it when --repo_contents_cache issue has been resolved in bazel
+common --repo_contents_cache=
+# TODO: Remove it when the following fix has merged into BCR
+# https://github.com/open-source-parsers/jsoncpp/pull/1673
+# common --features=external_include_paths
+# common --host_features=external_include_paths
