@@ -5652,11 +5652,22 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
            }},
           {"section_decl",
            [&] {
-             if (!use_implicit_weak_descriptor) return;
-             p->Emit({{"section",
-                       WeakDefaultInstanceSection(
-                           descriptor_, index_in_file_messages_, options_)}},
-                     R"cc(__attribute__((section("$section$"))))cc");
+             if (use_implicit_weak_descriptor) {
+               p->Emit({{"section",
+                         WeakDefaultInstanceSection(
+                             descriptor_, index_in_file_messages_, options_)}},
+                       R"cc(__attribute__((section("$section$"))))cc");
+               return;
+             }
+             // File descriptor proto is mutable.
+             if (is_file_descriptor_proto) return;
+
+             p->Emit(
+                 R"cc(
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+                   __attribute__((section(".data.rel.ro")))
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+                 )cc");
            }},
           {"const",
            [&] {

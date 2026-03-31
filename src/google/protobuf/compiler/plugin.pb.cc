@@ -195,7 +195,11 @@ static_assert(PROTOBUF_FIELD_OFFSET(VersionGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
+    #ifdef PROTOBUF_MESSAGE_GLOBALS
+    __attribute__((section(".data.rel.ro")))
+    #endif  // PROTOBUF_MESSAGE_GLOBALS
+     
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
@@ -373,7 +377,11 @@ static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_FileGlobalsTypeInterna
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
+    #ifdef PROTOBUF_MESSAGE_GLOBALS
+    __attribute__((section(".data.rel.ro")))
+    #endif  // PROTOBUF_MESSAGE_GLOBALS
+     
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
@@ -561,7 +569,11 @@ static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponseGlobalsTypeInternal, _d
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
+    #ifdef PROTOBUF_MESSAGE_GLOBALS
+    __attribute__((section(".data.rel.ro")))
+    #endif  // PROTOBUF_MESSAGE_GLOBALS
+     
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
@@ -764,7 +776,11 @@ static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorRequestGlobalsTypeInternal, _de
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
+    #ifdef PROTOBUF_MESSAGE_GLOBALS
+    __attribute__((section(".data.rel.ro")))
+    #endif  // PROTOBUF_MESSAGE_GLOBALS
+     
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
