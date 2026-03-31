@@ -80,7 +80,7 @@ internal::EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CppFeatures>() {
-  static constexpr char kDefaults[] = "CiUYhAciA8I+ACobCAEQAhgCIAMoATACOAJAAcI+CAgBEAMYACABCiUY5wciA8I+ACobCAIQARgBIAIoATABOAJAAcI+CAgAEAMYACABCiUY6AciEwgBEAEYASACKAEwAcI+BAgAEAMqCzgCQAHCPgQYACABCiUY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqBcI+AiABCiUYj04iGwgBEAEYASACKAEwATgDQALCPggIABABGAEgASoDwj4AIOYHKOkH";
+  static constexpr char kDefaults[] = "CicYhAciA8I+ACodCAEQAhgCIAMoATACOAJAAUgBwj4ICAEQAxgAIAEKJxjnByIDwj4AKh0IAhABGAEgAigBMAE4AkABSAHCPggIABADGAAgAQonGOgHIhMIARABGAEgAigBMAHCPgQIABADKg04AkABSAHCPgQYACABCicY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqB0gBwj4CIAEKJxiPTiIdCAEQARgBIAIoATABOANAAkgCwj4ICAAQARgBIAEqA8I+ACDmByjpBw==";
   return kDefaults;
 }
 }  // namespace internal
