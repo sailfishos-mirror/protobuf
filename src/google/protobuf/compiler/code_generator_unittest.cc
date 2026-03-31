@@ -337,6 +337,7 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtensionEditedDefaults) {
         json_format: LEGACY_BEST_EFFORT
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     defaults {
@@ -358,6 +359,7 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtensionEditedDefaults) {
       fixed_features {
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
   )pb");

@@ -63,6 +63,8 @@ enum ExtensionRangeOptions_VerificationState : int;
 PROTOBUF_EXPORT extern const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[];
 enum FeatureSet_EnforceNamingStyle : int;
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnforceNamingStyle_internal_data_[];
+enum FeatureSet_EnforceProtoLimits : int;
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnforceProtoLimits_internal_data_[];
 enum FeatureSet_EnumType : int;
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
 enum FeatureSet_FieldPresence : int;
@@ -378,6 +380,9 @@ internal::EnumTraitsT<::google::protobuf::ExtensionRangeOptions_VerificationStat
 template <>
 internal::EnumTraitsT<::google::protobuf::FeatureSet_EnforceNamingStyle_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_EnforceNamingStyle>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_EnforceProtoLimits_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_EnforceProtoLimits>;
 template <>
 internal::EnumTraitsT<::google::protobuf::FeatureSet_EnumType_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_EnumType>;
@@ -1091,6 +1096,43 @@ template <>
 [[nodiscard]] inline bool FeatureSet_EnforceNamingStyle_Parse(
     ::absl::string_view name, FeatureSet_EnforceNamingStyle* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_EnforceNamingStyle>(FeatureSet_EnforceNamingStyle_descriptor(), name,
+                                           value);
+}
+enum FeatureSet_EnforceProtoLimits : int {
+  FeatureSet_EnforceProtoLimits_PROTO_LIMITS_UNKNOWN = 0,
+  FeatureSet_EnforceProtoLimits_LEGACY_NO_EXPLICIT_LIMITS = 1,
+  FeatureSet_EnforceProtoLimits_PROTO_LIMITS2026 = 2,
+};
+
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnforceProtoLimits_internal_data_[];
+inline constexpr FeatureSet_EnforceProtoLimits FeatureSet_EnforceProtoLimits_EnforceProtoLimits_MIN =
+    static_cast<FeatureSet_EnforceProtoLimits>(0);
+inline constexpr FeatureSet_EnforceProtoLimits FeatureSet_EnforceProtoLimits_EnforceProtoLimits_MAX =
+    static_cast<FeatureSet_EnforceProtoLimits>(2);
+[[nodiscard]] inline bool FeatureSet_EnforceProtoLimits_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
+inline constexpr int FeatureSet_EnforceProtoLimits_EnforceProtoLimits_ARRAYSIZE = 2 + 1;
+[[nodiscard]] PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_EnforceProtoLimits_descriptor();
+[[nodiscard]] inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_EnforceProtoLimits) {
+  return FeatureSet_EnforceProtoLimits_descriptor();
+}
+template <typename T>
+[[nodiscard]] const ::std::string& FeatureSet_EnforceProtoLimits_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_EnforceProtoLimits>::value ||
+                    ::std::is_integral<T>::value,
+                "Incorrect type passed to EnforceProtoLimits_Name().");
+  return FeatureSet_EnforceProtoLimits_Name(static_cast<FeatureSet_EnforceProtoLimits>(value));
+}
+template <>
+[[nodiscard]] inline const ::std::string& FeatureSet_EnforceProtoLimits_Name(FeatureSet_EnforceProtoLimits value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnforceProtoLimits_descriptor, 0, 2>(
+      static_cast<int>(value));
+}
+[[nodiscard]] inline bool FeatureSet_EnforceProtoLimits_Parse(
+    ::absl::string_view name, FeatureSet_EnforceProtoLimits* PROTOBUF_NONNULL value) {
+  return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_EnforceProtoLimits>(FeatureSet_EnforceProtoLimits_descriptor(), name,
                                            value);
 }
 enum GeneratedCodeInfo_Annotation_Semantic : int {
@@ -2992,6 +3034,27 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
       ::absl::string_view name, EnforceNamingStyle* PROTOBUF_NONNULL value) {
     return FeatureSet_EnforceNamingStyle_Parse(name, value);
   }
+  using EnforceProtoLimits = FeatureSet_EnforceProtoLimits;
+  static constexpr EnforceProtoLimits PROTO_LIMITS_UNKNOWN = FeatureSet_EnforceProtoLimits_PROTO_LIMITS_UNKNOWN;
+  static constexpr EnforceProtoLimits LEGACY_NO_EXPLICIT_LIMITS = FeatureSet_EnforceProtoLimits_LEGACY_NO_EXPLICIT_LIMITS;
+  static constexpr EnforceProtoLimits PROTO_LIMITS2026 = FeatureSet_EnforceProtoLimits_PROTO_LIMITS2026;
+  [[nodiscard]] static inline bool EnforceProtoLimits_IsValid(int value) {
+    return FeatureSet_EnforceProtoLimits_IsValid(value);
+  }
+  static constexpr EnforceProtoLimits EnforceProtoLimits_MIN = FeatureSet_EnforceProtoLimits_EnforceProtoLimits_MIN;
+  static constexpr EnforceProtoLimits EnforceProtoLimits_MAX = FeatureSet_EnforceProtoLimits_EnforceProtoLimits_MAX;
+  static constexpr int EnforceProtoLimits_ARRAYSIZE = FeatureSet_EnforceProtoLimits_EnforceProtoLimits_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL EnforceProtoLimits_descriptor() {
+    return FeatureSet_EnforceProtoLimits_descriptor();
+  }
+  template <typename T>
+  [[nodiscard]] static inline const ::std::string& EnforceProtoLimits_Name(T value) {
+    return FeatureSet_EnforceProtoLimits_Name(value);
+  }
+  [[nodiscard]] static inline bool EnforceProtoLimits_Parse(
+      ::absl::string_view name, EnforceProtoLimits* PROTOBUF_NONNULL value) {
+    return FeatureSet_EnforceProtoLimits_Parse(name, value);
+  }
 
   // accessors -------------------------------------------------------
   enum : int {
@@ -3003,6 +3066,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
     kJsonFormatFieldNumber = 6,
     kEnforceNamingStyleFieldNumber = 7,
     kDefaultSymbolVisibilityFieldNumber = 8,
+    kEnforceProtoLimitsFieldNumber = 9,
   };
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_field_presence()
@@ -3098,6 +3162,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   private:
   ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility _internal_default_symbol_visibility() const;
   void _internal_set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value);
+
+  public:
+  // optional .google.protobuf.FeatureSet.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {
+  [[nodiscard]] bool has_enforce_proto_limits()
+      const;
+  void clear_enforce_proto_limits() ;
+  [[nodiscard]] ::google::protobuf::FeatureSet_EnforceProtoLimits enforce_proto_limits() const;
+  void set_enforce_proto_limits(::google::protobuf::FeatureSet_EnforceProtoLimits value);
+
+  private:
+  ::google::protobuf::FeatureSet_EnforceProtoLimits _internal_enforce_proto_limits() const;
+  void _internal_set_enforce_proto_limits(::google::protobuf::FeatureSet_EnforceProtoLimits value);
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -3294,8 +3370,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
  private:
   class _Internal;
   using ParseTableT_ =
-      ::google::protobuf::internal::TcParseTable<3, 8,
-                          8, 0,
+      ::google::protobuf::internal::TcParseTable<4, 9,
+                          9, 0,
                           2>;
   static constexpr ParseTableT_ InternalGenerateParseTable_(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
@@ -3332,6 +3408,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
     int json_format_;
     int enforce_naming_style_;
     int default_symbol_visibility_;
+    int enforce_proto_limits_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -22032,6 +22109,37 @@ inline void FeatureSet::_internal_set_default_symbol_visibility(::google::protob
                                           _impl_.default_symbol_visibility_ = value;
 }
 
+// optional .google.protobuf.FeatureSet.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {
+inline bool FeatureSet::has_enforce_proto_limits() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000100U);
+  return value;
+}
+inline void FeatureSet::clear_enforce_proto_limits() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.enforce_proto_limits_ = 0;
+  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+}
+inline ::google::protobuf::FeatureSet_EnforceProtoLimits FeatureSet::enforce_proto_limits() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.enforce_proto_limits)
+  return _internal_enforce_proto_limits();
+}
+inline void FeatureSet::set_enforce_proto_limits(::google::protobuf::FeatureSet_EnforceProtoLimits value) {
+  _internal_set_enforce_proto_limits(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000100U);
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.enforce_proto_limits)
+}
+inline ::google::protobuf::FeatureSet_EnforceProtoLimits FeatureSet::_internal_enforce_proto_limits() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::google::protobuf::FeatureSet_EnforceProtoLimits>(_impl_.enforce_proto_limits_);
+}
+inline void FeatureSet::_internal_set_enforce_proto_limits(::google::protobuf::FeatureSet_EnforceProtoLimits value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_EnforceProtoLimits_internal_data_));
+                                          _impl_.enforce_proto_limits_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // FeatureSetDefaults_FeatureSetEditionDefault
@@ -23139,6 +23247,12 @@ struct is_proto_enum<::google::protobuf::FeatureSet_EnforceNamingStyle> : std::t
 template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::FeatureSet_EnforceNamingStyle>() {
   return ::google::protobuf::FeatureSet_EnforceNamingStyle_descriptor();
+}
+template <>
+struct is_proto_enum<::google::protobuf::FeatureSet_EnforceProtoLimits> : std::true_type {};
+template <>
+inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::FeatureSet_EnforceProtoLimits>() {
+  return ::google::protobuf::FeatureSet_EnforceProtoLimits_descriptor();
 }
 template <>
 struct is_proto_enum<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic> : std::true_type {};

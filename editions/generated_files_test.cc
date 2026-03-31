@@ -12,6 +12,7 @@
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "editions/input/test_editions_2024_default_features.pb.h"
+#include "editions/input/test_editions_2026_default_features.pb.h"
 #include "editions/input/test_editions_default_features.pb.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/test_textproto.h"
@@ -24,6 +25,7 @@ namespace protobuf {
 namespace {
 
 using ::protobuf_editions_test::Editions2024DefaultMessage;
+using ::protobuf_editions_test::Editions2026DefaultMessage;
 using ::protobuf_editions_test::EditionsDefaultMessage;
 using ::protobuf_test_messages::editions::proto2::TestAllRequiredTypesProto2;
 using ::protobuf_test_messages::editions::proto2::TestAllTypesProto2;
@@ -150,6 +152,7 @@ TEST(Generated, EditionDefaults2023InternalFeatures) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -184,6 +187,29 @@ TEST(Generated, EditionDefaults2024InternalFeatures) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE2024
                 default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  string_type: VIEW
+                  enum_name_uses_string_view: true
+                  repeated_type: LEGACY
+                }
+              )pb"));
+}
+
+TEST(Generated, EditionDefaults2026InternalFeatures) {
+  EXPECT_THAT(internal::InternalFeatureHelper::GetFeatures(
+                  *Editions2026DefaultMessage::descriptor()),
+              google::protobuf::EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE2026
+                default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: PROTO_LIMITS2026
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
