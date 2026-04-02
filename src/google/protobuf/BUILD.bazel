@@ -1964,6 +1964,7 @@ cc_test(
     copts = COPTS,
     deps = [
         ":cc_test_protos",
+        ":edition_defaults_test_utils",
         ":port",
         ":protobuf",
         ":test_textproto",
@@ -1983,6 +1984,35 @@ cc_test(
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "edition_defaults_test_utils",
+    testonly = True,
+    srcs = ["editions/edition_defaults_test_utils.cc"],
+    hdrs = ["editions/edition_defaults_test_utils.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":protobuf",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "edition_defaults_test_utils_test",
+    srcs = ["editions/edition_defaults_test_utils_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":edition_defaults_test_utils",
+        ":protobuf",
+        ":test_textproto",
+        ":unittest_features_cc_proto",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest_main",
     ],
 )

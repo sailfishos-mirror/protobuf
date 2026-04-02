@@ -1,7 +1,11 @@
 #include "editions/edition_defaults_test_utils.h"
 
 #include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/text_format.h"
 
 namespace google {
 namespace protobuf {
@@ -15,6 +19,33 @@ absl::optional<FeatureSetDefaults::FeatureSetEditionDefault> FindEditionDefault(
     }
   }
   return absl::nullopt;
+}
+
+namespace {
+// TODO: Remove this function once test util Partially is available
+// in OSS.
+//
+// Removes any EDITION_UNSTABLE entries from the defaults repeated field.
+FeatureSetDefaults ScrubUnstable(const FeatureSetDefaults& defaults) {
+  FeatureSetDefaults result = defaults;
+  auto* mutable_defaults = result.mutable_defaults();
+  for (int i = 0; i < mutable_defaults->size(); ++i) {
+    if (mutable_defaults->Get(i).edition() == EDITION_UNSTABLE) {
+      mutable_defaults->DeleteSubrange(i, 1);
+      --i;
+    }
+  }
+  return result;
+}
+}  // namespace
+
+// Partially matches FeatureSetDefaults against a textproto for the purpose of
+// ignoring defaults for EDITION_UNSTABLE.
+::testing::Matcher<FeatureSetDefaults> PartiallyMatchesEditionDefaults(
+    absl::string_view expected_textproto) {
+  FeatureSetDefaults expected;
+  ABSL_CHECK(TextFormat::ParseFromString(expected_textproto, &expected));
+  return ::testing::ResultOf(ScrubUnstable, ::testing::EqualsProto(expected));
 }
 
 }  // namespace compiler
