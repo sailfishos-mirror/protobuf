@@ -1987,7 +1987,6 @@ static void AppendTextFormatForUnknownFields(GPBUnknownFields *ufs, NSMutableStr
       } break;
     }
   }
-  [subIndent release];
   [sortedFields release];
 }
 
