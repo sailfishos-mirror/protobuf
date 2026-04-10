@@ -78,6 +78,8 @@ cc_library(
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/stubs:lite",
+        # TODO: Figure out how we do this.
+        #"//csharp:c_sharp_features_cc_proto",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_log",

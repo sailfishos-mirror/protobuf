@@ -25,6 +25,11 @@ proto_library(
     deps = ["//:descriptor_proto"],
 )
 
+cc_proto_library(
+    name = "c_sharp_features_cc_proto",
+    deps = [":c_sharp_features_proto"],
+)
+
 ################################################################################
 # Tests
 ################################################################################
