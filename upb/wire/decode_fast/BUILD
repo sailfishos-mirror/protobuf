@@ -9,7 +9,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -39,6 +39,7 @@ cc_library(
         "field_generic.c",
         "field_message.c",
         "field_string.c",
+        "field_unknown.c",
         "field_varint.c",
     ],
     hdrs = ["field_parsers.h"],
@@ -104,6 +105,7 @@ cc_library(
     deps = [
         ":combinations",
         ":data",
+        ":dispatch",
         "//upb/base",
         "//upb/base:internal",
         "//upb/mini_table",
@@ -118,7 +120,13 @@ cc_test(
     srcs = ["select_test.cc"],
     deps = [
         ":combinations",
+        ":dispatch",
         ":select",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/mini_table:internal",
+        "//upb/wire/test_util:field_types",
+        "//upb/wire/test_util:make_mini_table",
         "@abseil-cpp//absl/base:core_headers",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
@@ -167,6 +175,7 @@ cc_library(
     ],
     deps = [
         ":combinations",
+        ":dispatch",
         ":field_parsers",
         "//upb/mini_table:internal",
         "//upb/port",
@@ -180,5 +189,25 @@ cc_binary(
         ":select",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
+    ],
+)
+
+cc_test(
+    name = "test_unknown",
+    srcs = ["test_unknown.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
+    deps = [
+        ":combinations",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/port",
+        "//upb/wire",
+        "//upb/wire/test_util:field_types",
+        "//upb/wire/test_util:make_mini_table",
+        "//upb/wire/test_util:wire_message",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )

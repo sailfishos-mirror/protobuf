@@ -1,0 +1,17 @@
+load(
+    "//third_party/bazel/src/main/protobuf/project:project_proto.scl",
+    "buildable_unit_pb2",
+    "project_pb2",
+)
+
+project = project_pb2.Project.create(
+    buildable_units = [
+        buildable_unit_pb2.BuildableUnit.create(
+            name = "decode_fast_project",
+            flags = [
+                "--//third_party/upb:fasttable_enabled=True",
+            ],
+            is_default = True,
+        ),
+    ],
+)

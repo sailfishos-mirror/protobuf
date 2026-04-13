@@ -23,6 +23,9 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+// A special value for function_idx to indicate that the field is unknown.
+#define kUpb_DecodeFast_Unknown (UINT32_MAX - 1)
+
 // The standard set of arguments passed to each parsing function.
 // Thanks to x86-64 calling conventions, these will stay in registers.
 #define UPB_PARSE_PARAMS                                             \

@@ -1,0 +1,116 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#include <stdint.h>
+
+#include "upb/base/string_view.h"
+#include "upb/message/internal/message.h"
+#include "upb/message/message.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/dispatch.h"
+#include "upb/wire/decode_fast/field_parsers.h"
+#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/internal/decoder.h"
+#include "upb/wire/reader.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeUnknown(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
+    uint64_t hasbits, uint64_t data) {
+  const char* start = ptr;
+
+  if ((data & 0x80) == 0) {
+    // Important: if the branch is correctly predicted, this
+    // pointer increment is treated as constant and subsequent
+    // loads will not have a data dependency on this branch.
+    ptr += 1;
+    if ((data & 0xF8) == 0) {
+      return _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+    }
+  } else if ((data & 0x8000) == 0) {
+    // Ditto the above comment.
+    ptr += 2;
+    if ((data & 0x7f78) == 0) {
+      return _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+    }
+  } else {
+    // Tag >=2048
+    upb_DecodeFastNext ret;
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, &ret);
+    return _upb_FastDecoder_FallbackToMiniTable(d, ptr, msg, table, hasbits,
+                                                data);
+  }
+
+  uint32_t wire_type = data & 0x07;
+
+  if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
+                   wire_type == kUpb_WireType_StartGroup)) {
+    // FastDecoder doesn't handle group fields, but it can be used to decode a
+    // message that is itself a group. When decoding a group, the end of the
+    // message is marked by an EndGroup tag. Since EndGroup tags are not in the
+    // MiniTable, they are routed to the unknown field handler. We must
+    // intercept them here to properly terminate the message.
+    upb_DecodeFastNext ret;
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, &ret);
+    return _upb_FastDecoder_FallbackToMiniTable(d, ptr, msg, table, hasbits,
+                                                data);
+  }
+
+  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+
+  switch (wire_type) {
+    case kUpb_WireType_Varint:
+      UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 10);
+      while (*ptr & 0x80) ptr++;
+      ptr++;
+      break;
+    case kUpb_WireType_32Bit:
+      UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 4);
+      ptr += 4;
+      break;
+    case kUpb_WireType_64Bit:
+      UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 8);
+      ptr += 8;
+      break;
+    case kUpb_WireType_Delimited: {
+      int size;
+      ptr = upb_WireReader_ReadSize(ptr, &size, &d->input);
+      if (UPB_UNLIKELY(!ptr || !upb_EpsCopyInputStream_CheckSize(&d->input, ptr,
+                                                                 size))) {
+        return _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+      }
+      ptr += size;
+      break;
+    }
+    default:
+      return _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  }
+
+  upb_StringView sv;
+  upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
+
+  upb_AddUnknownMode mode = kUpb_AddUnknown_Copy;
+  if (d->options & kUpb_DecodeOption_AliasString) {
+    if (sv.data != d->input.buffer_start) {
+      mode = kUpb_AddUnknown_AliasAllowMerge;
+    } else {
+      mode = kUpb_AddUnknown_Alias;
+    }
+  }
+
+  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, sv.data, sv.size, &d->arena,
+                                            mode)) {
+    return _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+  }
+
+  upb_DecodeFastNext ret;
+  UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_Dispatch, &ret);
+  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(d, ptr, msg, table, hasbits, 0);
+}

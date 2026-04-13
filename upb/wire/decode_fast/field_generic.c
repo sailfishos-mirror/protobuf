@@ -5,6 +5,7 @@
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/reader.h"
 
 // Must be last.
 #include "upb/port/def.inc"

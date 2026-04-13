@@ -13,6 +13,7 @@
 
 #include "upb/message/message.h"
 #include "upb/wire/decode_fast/combinations.h"
+#include "upb/wire/decode_fast/dispatch.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -42,6 +43,9 @@ const char* _upb_FastDecoder_FallbackToMiniTable(PARSE_PARAMS);
 
 UPB_PRESERVE_NONE
 const char* _upb_FastDecoder_DecodeGeneric(PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+const char* _upb_FastDecoder_DecodeUnknown(PARSE_PARAMS);
 
 #undef F
 #undef PARSE_PARAMS
