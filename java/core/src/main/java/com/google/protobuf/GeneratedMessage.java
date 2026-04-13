@@ -1176,24 +1176,23 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       public void writeUntil(final int end, final CodedOutputStream output) throws IOException {
         while (next != null && next.getKey().getNumber() < end) {
           FieldDescriptor descriptor = next.getKey();
-          if (messageSetWireFormat
-              && descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
-              && !descriptor.isRepeated()) {
-            if (next instanceof InternalLazyField.LazyEntry<?>) {
-              output.writeRawMessageSetExtension(
-                  descriptor.getNumber(),
-                  ((InternalLazyField.LazyEntry<?>) next).getField().toByteString());
-            } else {
-              output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
-            }
+
+          boolean isSingularMessage =
+              descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
+                  && !descriptor.isRepeated();
+          boolean lazy = isSingularMessage && next instanceof InternalLazyField.LazyEntry<?>;
+
+          if (messageSetWireFormat && lazy) {
+            output.writeRawMessageSetExtension(
+                descriptor.getNumber(),
+                ((InternalLazyField.LazyEntry<?>) next).getField().toByteString());
+          } else if (messageSetWireFormat && isSingularMessage) {
+            output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
+          } else if (lazy) {
+            output.writeBytes(
+                descriptor.getNumber(),
+                ((InternalLazyField.LazyEntry<?>) next).getField().toByteString());
           } else {
-            // TODO: Taken care of following code, it may cause
-            // problem when we use InternalLazyField for normal fields/extensions.
-            // Due to the optional field can be duplicated at the end of
-            // serialized bytes, which will make the serialized size change
-            // after lazy field parsed. So when we use InternalLazyField globally,
-            // we need to change the following write method to write cached
-            // bytes directly rather than write the parsed message.
             FieldSet.writeField(descriptor, next.getValue(), output);
           }
           if (iter.hasNext()) {
@@ -2028,6 +2027,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
      * single element.
      */
     @Override
+    @SuppressWarnings("PatternMatchingInstanceof")
     protected Object singularFromReflectionType(final Object value) {
       FieldDescriptor descriptor = getDescriptor();
       switch (descriptor.getJavaType()) {
@@ -2035,6 +2035,9 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           if (singularType.isInstance(value)) {
             return value;
           } else {
+            if (value instanceof InternalLazyField) {
+              return ((InternalLazyField) value).getValue();
+            }
             return messageDefaultInstance.newBuilderForType().mergeFrom((Message) value).build();
           }
         case ENUM:
