@@ -4780,7 +4780,7 @@ TEST(CustomOptions, AggregateOptions) {
             file_options.file().GetExtension(proto2_unittest::fileopt).s());
   EXPECT_EQ("EmbeddedMessageSetElement",
             file_options.mset()
-                .GetExtension(proto2_unittest::AggregateMessageSetElement ::
+                .GetExtension(proto2_unittest::AggregateMessageSetElement::
                                   message_set_extension)
                 .s());
 
@@ -7946,6 +7946,263 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
       "} ",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+}
+
+// Test for the scenario:
+// package pkg;
+// message B {
+//   AEntry x = 1;
+//   map<int32, int32> a = 2; // Synthesizes B.AEntry
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeUsedAsField) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_OPTIONAL }"
+      "  field { name: \"a\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.x: TYPE: pkg.B.AEntry is a synthetic MapEntry message "
+      "type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+// }
+// message C {
+//   B.AEntry a = 1; // Field name matches AEntry, but scope is different.
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeCrossMessage) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}"
+      "message_type {"
+      "  name: \"C\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\".pkg.B.AEntry\" label: LABEL_OPTIONAL }"
+      "}",
+      "foo.proto: pkg.C.a: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message Container {
+//   map<uint32, AEntry> a = 1;
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticType) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"Container\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Container.AEntry.value: TYPE: "
+      "pkg.Container.AEntry is a synthetic MapEntry message type, which "
+      "is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+//   message C {
+//     message D {
+//       AEntry x = 1;
+//     }
+//   }
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScope) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "  nested_type {"
+      "    name: \"C\""
+      "    nested_type {"
+      "      name: \"D\""
+      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "    }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message AEntry {}
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+//   message C {
+//     message D {
+//       AEntry x = 1;
+//     }
+//   }
+// }
+// Expect: error on synthetic MapEntry, has suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScopeWithAlternative) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"AEntry\""
+      "}"
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "  nested_type {"
+      "    name: \"C\""
+      "    nested_type {"
+      "      name: \"D\""
+      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "    }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type. Maybe "
+      "you meant \".pkg.AEntry\"?\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message AEntry {}
+// message Container {
+//   map<uint32, AEntry> a = 1;
+// }
+// Expect: error on synthetic MapEntry, has suggestion
+TEST_F(ValidationErrorTest, MapValueSyntheticNameCollision) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"AEntry\""
+      "}"
+      "message_type {"
+      "  name: \"Container\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Container.AEntry.value: TYPE: "
+      "pkg.Container.AEntry is a synthetic MapEntry message type, which "
+      "is not allowed to be used as a field type. Maybe you meant "
+      "\".pkg.AEntry\"?\n");
+}
+
+// Test for the scenario where the alternative suggestion is an enum.
+// package pkg;
+// enum MyEntry { VALUE = 0; }
+// message Foo {
+//   map<int32, int32> my = 1; // Synthesizes Foo.MyEntry
+//   MyEntry bar = 2; // User wants to use pkg.MyEntry (enum) but resolves to
+//   Foo.MyEntry
+// }
+// Expect: error on synthetic MapEntry, suggesting the enum alternative.
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeAlternativeIsEnum) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "enum_type {"
+      "  name: \"MyEntry\""
+      "  value { name: \"VALUE\" number: 0 }"
+      "}"
+      "message_type {"
+      "  name: \"Foo\""
+      "  field { name: \"my\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"MyEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  field { name: \"bar\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"MyEntry\" "
+      "          label: LABEL_OPTIONAL }"
+      "  nested_type {"
+      "    name: \"MyEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Foo.bar: TYPE: pkg.Foo.MyEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type. Maybe "
+      "you meant \".pkg.MyEntry\"?\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryEnumTypes) {

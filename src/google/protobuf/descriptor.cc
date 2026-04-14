@@ -8618,9 +8618,74 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
   // Validate map types.
   if (field->is_map()) {
     if (!ValidateMapEntry(field, proto)) {
-      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
-               "map_entry should not be set explicitly. Use map<KeyType, "
-               "ValueType> instead.");
+      // is_synthesized_map_entry indicates if the field's type appears as a
+      // synthetic map entry that can be found in the same file.
+      bool is_synthesized_map_entry = false;
+      const Descriptor* message = field->message_type();
+      if (message->containing_type() != nullptr) {
+        for (int i = 0; i < message->containing_type()->field_count(); ++i) {
+          const FieldDescriptor* f = message->containing_type()->field(i);
+          if (f->is_map() && f->message_type() == message &&
+              message->name() ==
+                  absl::StrCat(ToCamelCase(f->name(), false), "Entry")) {
+            is_synthesized_map_entry = true;
+            break;
+          }
+        }
+      }
+
+      // The field type being a synthetic map entry doesn't imply it's used
+      // correctly. The current field might have "stolen" this name from the
+      // real map entry, therefore need to determine if the current
+      // field is the rightful owner of the entry type
+      const std::string expected_entry_name =
+          absl::StrCat(ToCamelCase(field->name(), false), "Entry");
+      bool owns_synthesized_map_entry =
+          message->name() == expected_entry_name &&
+          field->containing_type() == message->containing_type();
+
+      if (is_synthesized_map_entry && !owns_synthesized_map_entry) {
+        // The field's type appears as a synthetic MapEntry, but the field
+        // itself is not the map field that caused the MapEntry to be
+        // synthesized. It means the user is incorrectly attempting to use the
+        // compiler-generated MapEntry message as a normal field type.
+        AddError(field->full_name(), proto,
+                 DescriptorPool::ErrorCollector::TYPE, [&] {
+                   std::string error = absl::StrCat(
+                       field->message_type()->full_name(),
+                       " is a synthetic MapEntry message type, which is not "
+                       "allowed to be used as a field type.");
+                   const Descriptor* container =
+                       field->message_type()->containing_type();
+                   if (container != nullptr) {
+                     // Since the input type is a synthetic message type,
+                     // it is likely that the user had intended to refer to a
+                     // different message type with the same name. Do a lookup
+                     // in outer scopes to make a guess on user's intention if
+                     // there is a message type found with the same name.
+                     // LookupSymbol() is used rather than FindSymbol() since
+                     // the initial scope for the lookup is known (i.e. 1 level
+                     // up from the current one).
+                     Symbol alter = LookupSymbol(
+                         field->message_type()->name(), container->full_name(),
+                         DescriptorPool::PLACEHOLDER_MESSAGE, LOOKUP_TYPES,
+                         false);
+                     if (!alter.IsNull() &&
+                         alter.descriptor() != field->message_type()) {
+                       // Use the fully qualified name of the alter message to
+                       // make sure the suggestion is guaranteed to work.
+                       absl::StrAppend(&error, " Maybe you meant \".",
+                                       alter.full_name(), "\"?");
+                     }
+                   }
+                   return error;
+                 });
+      } else {
+        AddError(field->full_name(), proto,
+                 DescriptorPool::ErrorCollector::TYPE,
+                 "map_entry should not be set explicitly. Use map<KeyType, "
+                 "ValueType> instead.");
+      }
     }
   }
 
