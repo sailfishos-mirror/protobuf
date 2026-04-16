@@ -39,6 +39,7 @@
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/lazy_field.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
@@ -699,7 +700,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Give access to function defined below to see LazyMessageExtension.
   static LazyMessageExtension* MaybeCreateLazyExtensionImpl(Arena* arena);
 #if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
-  static LazyField* MaybeCreateLazyExtension(Arena* arena);
+  static bool MaybeCreateLazyExtension(Arena* arena, LazyFieldForUnion* out);
 #else   // !PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
   static LazyMessageExtension* MaybeCreateLazyExtension(Arena* arena) {
     auto* f = maybe_create_lazy_extension_.load(std::memory_order_relaxed);
@@ -759,7 +760,7 @@ class PROTOBUF_EXPORT ExtensionSet {
       std::string* string_value;
       MessageLite* message_value;
 #if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
-      LazyField* lazymessage_value;
+      LazyFieldForUnion lazymessage_value;
 #else   // !PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
       LazyMessageExtension* lazymessage_value;
 #endif  // !PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
