@@ -219,8 +219,6 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence* self,
     return self->parent == other_seq->parent && self->funcs == other_seq->funcs;
   }
 
-  if (!PyList_Check(other)) return 0;
-
   // return list(self) == other
   // We can clamp `i` to int because GenericSequence uses int for size (this
   // is useful when we do int iteration below).
@@ -252,9 +250,13 @@ static PyObject* PyUpb_GenericSequence_RichCompare(PyObject* _self,
   if (opid != Py_EQ && opid != Py_NE) {
     Py_RETURN_NOTIMPLEMENTED;
   }
-  bool ret = PyUpb_GenericSequence_IsEqual(self, other);
-  if (opid == Py_NE) ret = !ret;
-  return PyBool_FromLong(ret);
+  if (!PyObject_TypeCheck(other, Py_TYPE(self)) && !PyList_Check(other)) {
+    Py_RETURN_NOTIMPLEMENTED;
+  }
+  int eq = PyUpb_GenericSequence_IsEqual(self, other);
+  if (eq < 0) return NULL;
+  if (opid == Py_NE) eq = !eq;
+  return PyBool_FromLong(eq);
 }
 
 static PyObject* PyUpb_GenericSequence_Subscript(PyObject* _self,
@@ -515,8 +517,6 @@ static int PyUpb_ByNameMap_IsEqual(PyUpb_ByNameMap* self, PyObject* other) {
     return self->parent == other_map->parent && self->funcs == other_map->funcs;
   }
 
-  if (!PyDict_Check(other)) return 0;
-
   PyObject* self_dict = PyDict_New();
   PyDict_Merge(self_dict, (PyObject*)self, 0);
   int eq = PyObject_RichCompareBool(self_dict, other, Py_EQ);
@@ -530,9 +530,13 @@ static PyObject* PyUpb_ByNameMap_RichCompare(PyObject* _self, PyObject* other,
   if (opid != Py_EQ && opid != Py_NE) {
     Py_RETURN_NOTIMPLEMENTED;
   }
-  bool ret = PyUpb_ByNameMap_IsEqual(self, other);
-  if (opid == Py_NE) ret = !ret;
-  return PyBool_FromLong(ret);
+  if (!PyObject_TypeCheck(other, Py_TYPE(self)) && !PyDict_Check(other)) {
+    Py_RETURN_NOTIMPLEMENTED;
+  }
+  int eq = PyUpb_ByNameMap_IsEqual(self, other);
+  if (eq < 0) return NULL;
+  if (opid == Py_NE) eq = !eq;
+  return PyBool_FromLong(eq);
 }
 
 static PyMethodDef PyUpb_ByNameMap_Methods[] = {
@@ -740,8 +744,6 @@ static int PyUpb_ByNumberMap_IsEqual(PyUpb_ByNumberMap* self, PyObject* other) {
     return self->parent == other_map->parent && self->funcs == other_map->funcs;
   }
 
-  if (!PyDict_Check(other)) return 0;
-
   PyObject* self_dict = PyDict_New();
   PyDict_Merge(self_dict, (PyObject*)self, 0);
   int eq = PyObject_RichCompareBool(self_dict, other, Py_EQ);
@@ -755,9 +757,13 @@ static PyObject* PyUpb_ByNumberMap_RichCompare(PyObject* _self, PyObject* other,
   if (opid != Py_EQ && opid != Py_NE) {
     Py_RETURN_NOTIMPLEMENTED;
   }
-  bool ret = PyUpb_ByNumberMap_IsEqual(self, other);
-  if (opid == Py_NE) ret = !ret;
-  return PyBool_FromLong(ret);
+  if (!PyObject_TypeCheck(other, Py_TYPE(self)) && !PyDict_Check(other)) {
+    Py_RETURN_NOTIMPLEMENTED;
+  }
+  int eq = PyUpb_ByNumberMap_IsEqual(self, other);
+  if (eq < 0) return NULL;
+  if (opid == Py_NE) eq = !eq;
+  return PyBool_FromLong(eq);
 }
 
 static PyMethodDef PyUpb_ByNumberMap_Methods[] = {

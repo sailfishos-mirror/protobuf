@@ -60,6 +60,28 @@ warnings.simplefilter('error', DeprecationWarning)
 @testing_refleaks.TestCase
 class MessageTest(unittest.TestCase):
 
+  def testBadEqOnFieldsByName(self, message_module):
+    from google.protobuf import descriptor_pb2, descriptor_pool
+    pool = descriptor_pool.DescriptorPool()
+    pool.Add(descriptor_pb2.FileDescriptorProto(
+        name="test.proto", syntax="proto3",
+        message_type=[descriptor_pb2.DescriptorProto(
+            name="TestMsg",
+            field=[descriptor_pb2.FieldDescriptorProto(
+                name="val", number=1, type=2, label=1)],
+        )],
+    ))
+    desc = pool.FindMessageTypeByName("TestMsg")
+    fields = desc.fields_by_name
+
+    class BadEq:
+        def __eq__(self, other): raise RuntimeError("comparison error")
+        def __iter__(self): return iter([])
+        def __len__(self): return 0
+
+    with self.assertRaises(RuntimeError):
+        fields == BadEq()
+
   def testBadUtf8String(self, message_module):
     if api_implementation.Type() != 'python':
       self.skipTest('Skipping testBadUtf8String, currently only the python '

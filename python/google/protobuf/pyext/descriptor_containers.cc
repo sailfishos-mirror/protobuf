@@ -400,8 +400,18 @@ static PyObject* RichCompare(PyContainer* self, PyObject* other, int opid) {
   int result;
 
   if (self->kind == PyContainer::KIND_SEQUENCE) {
+    if (!PyObject_TypeCheck(other, &DescriptorSequence_Type) &&
+        !PyList_Check(other)) {
+      Py_INCREF(Py_NotImplemented);
+      return Py_NotImplemented;
+    }
     result = DescriptorSequence_Equal(self, other);
   } else {
+    if (!PyObject_TypeCheck(other, &DescriptorMapping_Type) &&
+        !PyDict_Check(other)) {
+      Py_INCREF(Py_NotImplemented);
+      return Py_NotImplemented;
+    }
     result = DescriptorMapping_Equal(self, other);
   }
   if (result < 0) {
