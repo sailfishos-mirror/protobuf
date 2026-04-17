@@ -48,6 +48,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/cpp_file_options_bootstrap.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -549,6 +550,11 @@ std::string Namespace(absl::string_view package) {
 }
 
 std::string Namespace(const FileDescriptor* d) {
+  if (d->options().HasExtension(::pb::file::cpp)) {
+    if (!d->options().GetExtension(::pb::file::cpp).namespace_().empty())
+      return std::string(
+          d->options().GetExtension(::pb::file::cpp).namespace_());
+  }
   return Namespace(d->package());
 }
 
