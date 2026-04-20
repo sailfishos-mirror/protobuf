@@ -790,9 +790,9 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
       upb_MiniTable_FindFieldByNumber(t, field_number);
   if (field) return field;
 
-  if (d->extreg && t->UPB_PRIVATE(ext)) {
-    return _upb_Decoder_FindExtensionField(d, t, field_number,
-                                           t->UPB_PRIVATE(ext), wire_type);
+  if (d->extreg && (t->UPB_PRIVATE(ext) & 7)) {
+    return _upb_Decoder_FindExtensionField(
+        d, t, field_number, (t->UPB_PRIVATE(ext) & 7), wire_type);
   }
 
   return &upb_Decoder_FieldNotFoundField;  // Unknown field.

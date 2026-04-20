@@ -302,6 +302,10 @@ bool upb_DecodeFast_CheckTag(const char** ptr, upb_DecodeFast_Type type,
     }
     return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
   }
+  // On match fully zero out data to allow fallbacks to differentiate
+  // between unhandled fields & handled fields with
+  // unsupported content.
+  *data &= ~0xffffull;
   *ptr += upb_DecodeFast_TagSizeBytes(tagsize);
   return true;
 }
