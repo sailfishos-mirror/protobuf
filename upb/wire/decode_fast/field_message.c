@@ -75,7 +75,11 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
   upb_DecodeFast_MessageContext ctx = {subtablep,
                                        card == kUpb_DecodeFast_Repeated};
 
-  if (subtablep == NULL) {
+  if (subtablep == NULL ||
+      ((d->options & kUpb_DecodeOption_CheckRequired) == 0 &&
+       upb_MiniTable_FieldCount(subtablep) == 0 &&
+       !upb_MiniTable_IsMessageSet(subtablep) &&
+       subtablep->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable)) {
     UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
     return;
   }

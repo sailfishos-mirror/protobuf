@@ -831,7 +831,15 @@ void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
   // If sub-message is not linked, treat as unknown.
   if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) return;
   const upb_MiniTable* mt_sub = upb_MiniTable_GetSubMessageTable(field);
-  if (mt_sub != NULL) return;  // Normal case, sub-message is linked.
+  if (mt_sub != NULL) {
+    if ((d->options & kUpb_DecodeOption_CheckRequired) == 0 &&
+        upb_MiniTable_FieldCount(mt_sub) == 0 &&
+        !upb_MiniTable_IsMessageSet(mt_sub) &&
+        mt_sub->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable) {
+      *op = kUpb_DecodeOp_UnknownField;
+    }
+    return;
+  }
 #ifndef NDEBUG
   const upb_MiniTableField* oneof = upb_MiniTable_GetOneof(mt, field);
   if (oneof) {

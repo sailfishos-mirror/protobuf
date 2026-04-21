@@ -8,6 +8,7 @@
 #include "upb/wire/decode.h"
 
 #include <array>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -19,11 +20,14 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "upb/base/status.hpp"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/accessors.hpp"
 #include "upb/message/array.h"
 #include "upb/message/message.h"
+#include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
@@ -400,6 +404,39 @@ TYPED_TEST(PackedTest, DecodeTruncatedPackedFieldShortLength) {
                           msg_arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Malformed)
       << upb_DecodeStatus_String(result);
+}
+
+TEST(EmptySubMessageTest, EmptySubMessageTreatedAsUnknown) {
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [mt, field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Message>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  upb::Status status;
+  const upb_MiniTable* empty_sub_mt =
+      upb_MiniTable_Build("", 0, mt_arena.ptr(), status.ptr());
+  const upb_MiniTable* subs[1] = {empty_sub_mt};
+  bool linked =
+      upb_MiniTable_Link(const_cast<upb_MiniTable*>(mt), subs, 1, nullptr, 0);
+  ASSERT_TRUE(linked);
+
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  std::string payload("\x0a\x02\x61\x62", 4);
+  upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg, mt,
+                                       nullptr, 0, msg_arena.ptr());
+
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+  EXPECT_FALSE(upb_Message_HasBaseField(msg, field));
+
+  upb_StringView unknown;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  bool has_unknown = upb_Message_NextUnknown(msg, &unknown, &iter);
+  ASSERT_TRUE(has_unknown);
+  EXPECT_EQ(unknown.size, 4);
+  EXPECT_EQ(std::string(unknown.data, unknown.size), payload);
 }
 
 }  // namespace
