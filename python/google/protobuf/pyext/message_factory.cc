@@ -13,6 +13,7 @@
 
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
@@ -118,13 +119,20 @@ int RegisterMessageClass(PyMessageFactory* self,
                          const Descriptor* message_descriptor,
                          CMessageClass* message_class) {
   Py_INCREF(message_class);
-  typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
-  std::pair<iterator, bool> ret = self->classes_by_descriptor->insert(
-      std::make_pair(message_descriptor, message_class));
-  if (!ret.second) {
-    // Update case: DECREF the previous value.
-    Py_DECREF(ret.first->second);
-    ret.first->second = message_class;
+  CMessageClass* old_class = nullptr;
+  {
+    FreeThreadingLockGuard lock(self->mutex);
+    typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
+    std::pair<iterator, bool> ret = self->classes_by_descriptor->insert(
+        std::make_pair(message_descriptor, message_class));
+    if (!ret.second) {
+      // Update case: save the previous value to DECREF later.
+      old_class = ret.first->second;
+      ret.first->second = message_class;
+    }
+  }
+  if (old_class != nullptr) {
+    Py_DECREF(old_class);
   }
   return 0;
 }
@@ -134,11 +142,14 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
   // This is the same implementation as MessageFactory.GetPrototype().
 
   // Do not create a MessageClass that already exists.
-  std::unordered_map<const Descriptor*, CMessageClass*>::iterator it =
-      self->classes_by_descriptor->find(descriptor);
-  if (it != self->classes_by_descriptor->end()) {
-    Py_INCREF(it->second);
-    return it->second;
+  {
+    FreeThreadingLockGuard lock(self->mutex);
+    std::unordered_map<const Descriptor*, CMessageClass*>::iterator it =
+        self->classes_by_descriptor->find(descriptor);
+    if (it != self->classes_by_descriptor->end()) {
+      Py_INCREF(it->second);
+      return it->second;
+    }
   }
   ScopedPyObjectPtr py_descriptor(
       PyMessageDescriptor_FromDescriptor(descriptor));
@@ -192,6 +203,7 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
 // Retrieve the message class added to our database.
 CMessageClass* GetMessageClass(PyMessageFactory* self,
                                const Descriptor* message_descriptor) {
+  FreeThreadingLockGuard lock(self->mutex);
   typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
   iterator ret = self->classes_by_descriptor->find(message_descriptor);
   if (ret == self->classes_by_descriptor->end()) {
