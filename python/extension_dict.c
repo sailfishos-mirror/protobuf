@@ -129,6 +129,10 @@ static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
   if (val) {
     return PyUpb_Message_SetFieldValue(self->msg, f, val, PyExc_TypeError);
   } else {
+    if (PyUpb_Message_IsObjectFrozen(self->msg)) {
+      PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+      return -1;
+    }
     PyUpb_Message_DoClearField(self->msg, f);
     return 0;
   }

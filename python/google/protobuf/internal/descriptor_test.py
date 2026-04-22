@@ -250,21 +250,93 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(self.my_service.GetOptions(),
                      descriptor_pb2.ServiceOptions())
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'python', 'Not fixed yet in pure Python'
+  )
+  @unittest.skipIf(api_implementation.Type() == 'cpp', 'Not fixed yet in C++')
   def testModifyOptions(self):
-    # We unfortunately allow modification of options returned from GetOptions().
-    # This is not intended, and has negative consequences:
-    # - It makes the results of GetOptions() invalid if the options are
-    #   modified.
-    # - It has an efficiency cost from copying the options.
     message_options = self.my_message.GetOptions()
-    message_options.deprecated = True
-    self.assertTrue(
-        message_options.deprecated,
-        f'Modification ignored on {api_implementation.Type()}',
-    )
+    try:
+      message_options.deprecated = True
+      # If it succeeded, it must be a copy (or at least not shared).
+      # So getting options again should return the original unmodified options.
+      self.assertFalse(self.my_message.GetOptions().deprecated)
+    except (AttributeError, TypeError):
+      # If it failed with AttributeError or TypeError, it is truly immutable.
+      pass
 
-    # Modification is (unfortunately) reflected in the descriptor.
-    self.assertTrue(self.my_message.GetOptions().deprecated)
+  @unittest.skipIf(
+      api_implementation.Type() == 'python', 'Not fixed yet in pure Python'
+  )
+  @unittest.skipIf(api_implementation.Type() == 'cpp', 'Not fixed yet in C++')
+  def testModifyFrozenMessage(self):
+    message_options = self.my_message.GetOptions()
+    other_options = descriptor_pb2.MessageOptions()
+    other_options.deprecated = True
+
+    # Singular field mutation
+    with self.assertRaises((AttributeError, TypeError)):
+      message_options.deprecated = True
+
+    # Clear methods
+    with self.assertRaises(TypeError):
+      message_options.Clear()
+    with self.assertRaises(TypeError):
+      message_options.ClearField('deprecated')
+
+    # Merge/Copy
+    with self.assertRaises(TypeError):
+      message_options.MergeFrom(other_options)
+    with self.assertRaises(TypeError):
+      message_options.CopyFrom(other_options)
+
+    # Repeated field mutations
+    repeated_field = message_options.uninterpreted_option
+    with self.assertRaises((AttributeError, TypeError)):
+      repeated_field.add()
+    with self.assertRaises((AttributeError, TypeError)):
+      repeated_field.append(descriptor_pb2.UninterpretedOption())
+    with self.assertRaises((AttributeError, TypeError)):
+      repeated_field.extend([descriptor_pb2.UninterpretedOption()])
+    with self.assertRaises((AttributeError, TypeError)):
+      repeated_field.insert(0, descriptor_pb2.UninterpretedOption())
+    with self.assertRaises((AttributeError, TypeError)):
+      repeated_field.remove(descriptor_pb2.UninterpretedOption())
+    with self.assertRaises((AttributeError, TypeError)):
+      repeated_field.pop()
+    with self.assertRaises((AttributeError, TypeError)):
+      repeated_field.sort()
+    with self.assertRaises((AttributeError, TypeError)):
+      repeated_field.reverse()
+    with self.assertRaises((AttributeError, TypeError)):
+      del repeated_field[:]
+
+    # Unset submessage mutation
+    complex_opt1 = unittest_custom_options_pb2.complex_opt1
+    stub_submsg = unittest_pb2.TestAllTypes.DESCRIPTOR.GetOptions().Extensions[complex_opt1]
+    with self.assertRaises((AttributeError, TypeError)):
+      stub_submsg.foo = 5
+
+    # Extension dict mutation
+    with self.assertRaises((AttributeError, TypeError)):
+      message_options.Extensions[complex_opt1] = descriptor_pb2.MessageOptions()
+    with self.assertRaises((AttributeError, TypeError)):
+      del message_options.Extensions[complex_opt1]
+
+    # Map field mutations
+    map_field = stub_submsg.my_map
+    with self.assertRaises((AttributeError, TypeError)):
+      map_field['key'] = 123
+    with self.assertRaises((AttributeError, TypeError)):
+      del map_field['key']
+    with self.assertRaises((AttributeError, TypeError)):
+      map_field.clear()
+    with self.assertRaises((AttributeError, TypeError)):
+      map_field.setdefault('key', 123)
+    with self.assertRaises((AttributeError, TypeError)):
+      map_field.update({'key': 123})
+    with self.assertRaises((AttributeError, TypeError)):
+      map_field.MergeFrom(map_field)
 
   def testSimpleCustomOptions(self):
     file_descriptor = unittest_custom_options_pb2.DESCRIPTOR

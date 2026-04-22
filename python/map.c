@@ -76,9 +76,6 @@ static PyTypeObject* PyUpb_MapContainer_GetClass(const upb_FieldDef* f) {
 
 PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
                                      PyObject* arena) {
-  // We only create stubs when the parent is reified, by convention.  However
-  // this is not an invariant: the parent could become reified at any time.
-  assert(PyUpb_Message_GetIfReified(parent) == NULL);
   PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
   PyUpb_MapContainer* map = (void*)PyType_GenericAlloc(cls, 0);
   map->arena = arena;
@@ -107,7 +104,9 @@ upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
   } else {
     const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
     upb_MessageValue msgval = {.map_val = map};
-    PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval);
+    if (!PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval)) {
+      return NULL;
+    }
   }
   PyUpb_ObjCache_Add(map, &self->ob_base);
   Py_DECREF(self->ptr.parent);
@@ -131,6 +130,29 @@ upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* _self) {
   return PyUpb_MapContainer_Reify((PyObject*)self, NULL, NULL, 0);
 }
 
+/* PyUpb_MapContainer_EnsureReadonly()
+ *
+ * Ensure if the container is read-only.
+ * If it is a stub, it checks if the parent message is frozen.
+ * If it is reified, it checks if the underlying map is frozen.
+ * Returns true if read-only and sets an exception, false otherwise.
+ */
+static bool PyUpb_MapContainer_EnsureReadonly(PyUpb_MapContainer* self) {
+  if (PyUpb_MapContainer_IsStub(self)) {
+    if (PyUpb_Message_IsObjectFrozen(self->ptr.parent)) {
+      PyErr_SetString(PyExc_AttributeError, "Map is read-only");
+      return true;
+    }
+  } else {
+    upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
+    if (map && upb_Map_IsFrozen(map)) {
+      PyErr_SetString(PyExc_AttributeError, "Map is read-only");
+      return true;
+    }
+  }
+  return false;
+}
+
 static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
                                    upb_MessageValue key, upb_MessageValue val,
                                    upb_Arena* arena) {
@@ -151,7 +173,9 @@ static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
 static int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
                                               PyObject* val) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
+  if (PyUpb_MapContainer_EnsureReadonly(self)) return -1;
   upb_Map* map = PyUpb_MapContainer_EnsureReified(_self);
+  if (!map) return -1;
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
@@ -182,6 +206,7 @@ static PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
   upb_MessageValue u_key, u_val;
   if (!PyUpb_PyToUpb(key, key_f, &u_key, NULL)) return NULL;
   if (!map || !upb_Map_Get(map, u_key, &u_val)) {
+    if (PyUpb_MapContainer_EnsureReadonly(self)) return NULL;
     map = PyUpb_MapContainer_EnsureReified(_self);
     upb_Arena* arena = PyUpb_Arena_Get(self->arena);
     if (upb_FieldDef_IsSubMessage(val_f)) {
@@ -213,7 +238,10 @@ static int PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
 }
 
 static PyObject* PyUpb_MapContainer_Clear(PyObject* _self, PyObject* key) {
+  PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
+  if (PyUpb_MapContainer_EnsureReadonly(self)) return NULL;
   upb_Map* map = PyUpb_MapContainer_EnsureReified(_self);
+  if (!map) return NULL;
   upb_Map_Clear(map);
   Py_RETURN_NONE;
 }
@@ -234,6 +262,7 @@ static PyObject* PyUpb_ScalarMapContainer_Setdefault(PyObject* _self,
   }
 
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
+  if (PyUpb_MapContainer_EnsureReadonly(self)) return NULL;
   upb_Map* map = PyUpb_MapContainer_EnsureReified(_self);
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
@@ -307,6 +336,7 @@ int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
 
 static PyObject* PyUpb_MapContainer_MergeFrom(PyObject* _self, PyObject* _arg) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
+  if (PyUpb_MapContainer_EnsureReadonly(self)) return NULL;
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
 
   if (PyDict_Check(_arg)) {
