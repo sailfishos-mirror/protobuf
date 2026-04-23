@@ -303,6 +303,15 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
+  def testConcurrentGetOptionsRace(self):
+    """Reproduces a data race in GetOptions."""
+
+    def AccessOptions():
+      _ = unittest_proto3_pb2.TestAllTypes.DESCRIPTOR.GetOptions()
+
+    for _ in range(50):
+      self.RunThreads(10, AccessOptions)
+
 
 if __name__ == '__main__':
   unittest.main()

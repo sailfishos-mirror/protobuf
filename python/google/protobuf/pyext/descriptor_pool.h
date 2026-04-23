@@ -14,6 +14,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 
 namespace google {
 namespace protobuf {
@@ -71,6 +72,9 @@ typedef struct PyDescriptorPool {
   absl::flat_hash_map<const void*, PyObject*>* descriptor_options;
   // Similar cache for features.
   absl::flat_hash_map<const void*, PyObject*>* descriptor_features;
+
+  // Mutex protecting the caching maps above.
+  FreeThreadingMutex* cache_mutex;
 } PyDescriptorPool;
 
 extern PyTypeObject PyDescriptorPool_Type;
