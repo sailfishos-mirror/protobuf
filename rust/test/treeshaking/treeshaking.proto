@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package rust_protobuf.treeshaking;
+
+message UsedMessage {
+  int32 id = 1;
+}
+
+message UnusedMessage {
+  string secret_data = 1;
+}
