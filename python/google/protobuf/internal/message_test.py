@@ -15,6 +15,7 @@ serialization code in the whole library.
 
 __author__ = 'gps@google.com (Gregory P. Smith)'
 
+import array
 import collections
 import copy
 import math
@@ -1144,6 +1145,53 @@ class MessageTest(unittest.TestCase):
     m = message_module.TestAllTypes()
     m.optional_string = str('')
     self.assertIsInstance(m.optional_string, str)
+
+  def testAssignBufferToBytesField(self, message_module):
+    m = message_module.TestAllTypes()
+    data = b'0123456789AB'  # len=12.
+    view = memoryview(data)
+    with self.subTest('itemsize'), self.assertRaises(ValueError):
+      m.optional_bytes = view.cast('I')
+    with self.subTest('dimension'), self.assertRaises(ValueError):
+      m.optional_bytes = view.cast('B', shape=(len(view) // 4, 4))
+    with self.subTest('stride'), self.assertRaises(ValueError):
+      m.optional_bytes = view[::2]
+
+    m.optional_bytes = view
+    self.assertEqual(m.optional_bytes, data)
+
+  def testAppendBufferToRepeatedBytesField(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_bytes.append(memoryview(b'memoryview_item'))
+    self.assertEqual(list(m.repeated_bytes), [b'memoryview_item'])
+
+  def testAssignBufferToStringField(self, message_module):
+    m = message_module.TestAllTypes()
+    m.optional_string = memoryview(b'string_from_memoryview')
+    self.assertEqual(m.optional_string, 'string_from_memoryview')
+
+  def testAppendBufferToRepeatedStringField(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_string.append(memoryview(b'memoryview_item'))
+    self.assertEqual(list(m.repeated_string), ['memoryview_item'])
+
+    with self.assertRaises(ValueError):
+      m.repeated_string.append(memoryview(b'\xff\xfe\xfd'))
+
+  def testAssignBufferToRepeatedStringField(self, message_module):
+    m = message_module.TestAllTypes()
+    view = memoryview(b'0123456789AB')
+    with self.subTest('itemsize'), self.assertRaises(ValueError):
+      m.repeated_string.append(view.cast('I'))
+    with self.subTest('dimension'), self.assertRaises(ValueError):
+      view2d = view.cast('B', shape=(len(view) // 4, 4))
+      m.repeated_string.append(view2d)
+    with self.subTest('stride'), self.assertRaises(ValueError):
+      view_strides = view[::2]
+      m.repeated_string.append(view_strides)
+
+    m.repeated_string.append(view)
+    self.assertEqual(list(m.repeated_string), ['0123456789AB'])
 
   def testLongValuedSlice(self, message_module):
     """It should be possible to use int-valued indices in slices.
@@ -2416,6 +2464,31 @@ class Proto3Test(unittest.TestCase):
     self.assertIs(submsg, msg.map_int32_foreign_message.get(5))
     with self.assertRaises(TypeError):
       msg.map_int32_foreign_message.get('')
+
+  def testMapKeyMemoryviewSupport(self):
+    msg = map_unittest_pb2.TestMap()
+    # Test set with memoryview
+    msg.map_string_string[memoryview(b'key1')] = 'value1'
+    self.assertEqual(msg.map_string_string['key1'], 'value1')
+
+    # Test lookup with memoryview
+    self.assertIn(memoryview(b'key1'), msg.map_string_string)
+    self.assertEqual(msg.map_string_string[memoryview(b'key1')], 'value1')
+
+    # Test set with bytes
+    msg.map_string_string[b'key2'] = 'value2'
+    self.assertEqual(msg.map_string_string['key2'], 'value2')
+
+    # Test lookup with bytes
+    self.assertIn(b'key2', msg.map_string_string)
+    self.assertEqual(msg.map_string_string[b'key2'], 'value2')
+
+    # Test invalid UTF-8 raises ValueError
+    with self.assertRaises(ValueError):
+      msg.map_string_string[memoryview(b'\xff\xfe\xfd')] = 'value'
+
+    with self.assertRaises(ValueError):
+      msg.map_string_string[b'\xff\xfe\xfd'] = 'value'
 
   def testScalarMap(self):
     msg = map_unittest_pb2.TestMap()

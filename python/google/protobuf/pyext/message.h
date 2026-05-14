@@ -15,6 +15,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include "absl/functional/function_ref.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
 #include "google/protobuf/pyext/weak_value_map.h"
@@ -308,7 +309,11 @@ bool CheckAndGetInteger(PyObject* arg, T* value);
 bool CheckAndGetDouble(PyObject* arg, double* value);
 bool CheckAndGetFloat(PyObject* arg, float* value);
 bool CheckAndGetBool(PyObject* arg, bool* value);
-PyObject* CheckString(PyObject* arg, const FieldDescriptor* descriptor);
+// Validates arg for a string or bytes field, extracts the string view,
+// zero-copy, and invokes the callback on success. Returns the result of the
+// callback, or false on failure (setting a Python exception).
+bool CheckString(PyObject* arg, const FieldDescriptor* descriptor,
+                 absl::FunctionRef<bool(absl::string_view)> callback);
 bool CheckAndSetString(PyObject* arg, Message* message,
                        const FieldDescriptor* descriptor,
                        const Reflection* reflection, bool append, int index);
