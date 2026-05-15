@@ -1133,10 +1133,8 @@ const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
   return _upb_Decoder_DecodeFieldNoFast(d, ptr, msg, mt);
 }
 
-UPB_NOINLINE
-static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
-                                                   const char* ptr,
-                                                   upb_Message* msg) {
+const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d, const char* ptr,
+                                            upb_Message* msg) {
   if (upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     return ptr;
   }
@@ -1147,11 +1145,44 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     uint32_t tag;
     ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
-    if ((tag & 7) == kUpb_WireType_EndGroup) {
+    if (UPB_UNLIKELY(!ptr)) return NULL;
+
+    uint32_t wire_type = tag & 7;
+    if (wire_type == kUpb_WireType_EndGroup) {
       d->end_group = tag >> 3;
       break;
     }
-    ptr = _upb_WireReader_SkipValue(ptr, tag, d->depth, &d->input);
+
+    switch (wire_type) {
+      case kUpb_WireType_Varint:
+        ptr = upb_WireReader_SkipVarint(ptr, &d->input);
+        break;
+      case kUpb_WireType_32Bit:
+        UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 4);
+        ptr += 4;
+        break;
+      case kUpb_WireType_64Bit:
+        UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 8);
+        ptr += 8;
+        break;
+      case kUpb_WireType_Delimited: {
+        int size;
+        ptr = upb_WireReader_ReadSize(ptr, &size, &d->input);
+        if (UPB_UNLIKELY(!ptr || !upb_EpsCopyInputStream_CheckSize(
+                                     &d->input, ptr, size))) {
+          return NULL;
+        }
+        ptr += size;
+        break;
+      }
+      case kUpb_WireType_StartGroup:
+        ptr = UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, d->depth,
+                                                     &d->input);
+        break;
+      default:
+        return NULL;
+    }
+    if (UPB_UNLIKELY(!ptr)) return NULL;
   }
   upb_StringView sv;
   upb_EpsCopyCapture_End(&capture, &d->input, ptr, &sv);
@@ -1173,9 +1204,9 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
   UPB_ASSERT(mt);
   UPB_ASSERT(d->message_is_done == false);
 
-  if (UPB_UNLIKELY(upb_MiniTable_FieldCount(mt) == 0 &&
-                   UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(mt) ==
-                       kUpb_ExtMode_NonExtendable)) {
+  if (upb_MiniTable_FieldCount(mt) == 0 &&
+      UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(mt) ==
+          kUpb_ExtMode_NonExtendable) {
     return _upb_Decoder_DecodeEmptyMessage(d, ptr, msg);
   }
 
