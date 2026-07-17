@@ -103,7 +103,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
           bazel: ${{ matrix.config.bazel-command }} ${{ matrix.config.flags }} //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
-          version: 9.0.0
+          version: 9.2.0
 
   build_wheels:
     name: Build Wheels

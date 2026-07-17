@@ -124,6 +124,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: ${{ env.image }}
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
@@ -155,6 +156,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           platform: linux/arm64
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}

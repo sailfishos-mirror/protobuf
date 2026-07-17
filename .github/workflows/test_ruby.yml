@@ -89,6 +89,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: i386/ruby:3.2.11-bookworm
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
@@ -123,6 +124,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: ruby:3.2.11-bookworm
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           platform: linux/arm64
           command: >-

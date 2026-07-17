@@ -164,6 +164,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.7.0-${{ matrix.arch }}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
@@ -221,6 +222,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-9626718698895971df3953d4aa2321d7425f3c5f
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -264,6 +266,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-9626718698895971df3953d4aa2321d7425f3c5f
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=17 ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -362,6 +365,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-9626718698895971df3953d4aa2321d7425f3c5f
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=17 ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -404,6 +408,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.7.0-12.5-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >-
@@ -434,6 +439,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:d6028ab408c49932836cdc514116f06886d7f6868a4d430630aa52adc5aee2fc
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
@@ -486,7 +492,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.cache_key }}
-          version: ${{ matrix.bazel_version || '8.0.1' }}
+          version: ${{ matrix.bazel_version || '8.7.0' }}
 
   non-linux-cmake:
     strategy:
@@ -559,7 +565,7 @@ jobs:
         if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
         uses: protocolbuffers/protobuf-ci/bash@v5
         with:
-          bazel-version: 8.0.1
+          bazel-version: 8.7.0
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             cmake . -DCMAKE_CXX_STANDARD=17 -Dprotobuf_BUILD_TESTS=ON ${{ matrix.install-flags }}
@@ -586,7 +592,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-version: 8.0.1
+          bazel-version: 8.7.0
           command: >-
             cmake . -DCMAKE_CXX_STANDARD=17 -Dprotobuf_BUILD_TESTS=ON ${{ matrix.flags }}
             ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON

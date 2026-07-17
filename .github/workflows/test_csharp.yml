@@ -28,6 +28,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: /bin/bash
           command: >-
@@ -86,6 +87,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: mcr.microsoft.com/dotnet/sdk:8.0.100-bookworm-slim
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
