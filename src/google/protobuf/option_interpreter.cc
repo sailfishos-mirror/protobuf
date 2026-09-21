@@ -1125,27 +1125,29 @@ bool OptionInterpreter::MaybeCollectAnyFieldInAggregateOption(
     // The message is not an Any message.
     return false;
   }
+  std::string type_url = reflection->GetString(message, any_type_url_field);
+  if (type_url.empty()) {
+    // The Any message does not have type_url set (e.g. `{}` or `{ value: ... }`
+    // using regular field syntax). Return false so regular fields (if any) are
+    // collected normally.
+    return false;
+  }
   absl::StatusOr<TextFormat::FieldLocation> location =
       tree.GetFieldLocation(any_type_url_field);
-  if (location.ok()) {
-    dest_path.push_back(any_type_url_field->number());
-    AggregateFieldLocation afl;
-    afl.uninterpreted_path = uninterpreted_path;
-    afl.field_dest_path = dest_path;
-    afl.value_marker = UninterpretedOption::kStringValueFieldNumber;
-    afl.val_range = location->name;
-    aggregate_field_locations_.push_back(std::move(afl));
-    dest_path.pop_back();
-  } else {
-    // TODO: Switch to CHECK instead of LOG to ensure that this
-    // never happens in practice.
-    ABSL_LOG(WARNING) << "Error finding location of Any type_url <"
-                      << any_type_url_field->name()
-                      << "> in option. Error: " << location.status()
-                      << ". This should never happen in practice";
-  }
+  ABSL_CHECK_OK(location)
+      << "Error finding location of Any type_url <"
+      << any_type_url_field->name()
+      << "> in option. This should never happen in practice";
 
-  std::string type_url = reflection->GetString(message, any_type_url_field);
+  dest_path.push_back(any_type_url_field->number());
+  AggregateFieldLocation afl;
+  afl.uninterpreted_path = uninterpreted_path;
+  afl.field_dest_path = dest_path;
+  afl.value_marker = UninterpretedOption::kStringValueFieldNumber;
+  afl.val_range = location->name;
+  aggregate_field_locations_.push_back(std::move(afl));
+  dest_path.pop_back();
+
   std::string url_prefix, full_type_name;
   if (!internal::ParseAnyTypeUrl(type_url, &url_prefix, &full_type_name)) {
     // The type_url is not a valid Any type URL.
