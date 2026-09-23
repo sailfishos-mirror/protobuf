@@ -61,7 +61,8 @@ TEST(PortDeathTest, UnreachableTrapsOnDebugMode) {
 #endif
 }
 
-#if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#ifdef __clang__
+#if ABSL_HAVE_BUILTIN(__builtin_prefetch)
 
 // This test is only intended to ensure that `Prefetch()` continues to compile
 // and executes without crashing. It is difficult to programmatically verify the
@@ -137,7 +138,8 @@ TEST(PortTest, PrefetchWorksWithValidOffsets) {
   }
 }
 
-#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#endif  // ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#endif  // __clang__
 
 TEST(PortTest, CheckedAdd) {
   int n = (std::numeric_limits<int>::max)();

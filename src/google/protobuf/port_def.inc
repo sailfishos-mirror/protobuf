@@ -169,10 +169,12 @@
 // This is useful for lambdas where it is not easy to specify ALWAYS_INLINE.
 // Use like:
 //   PROTOBUF_ALWAYS_INLINE_CALL res = SomeFunc(args...);
-#if defined(__clang__) && !defined(PROTOBUF_NO_INLINE_CALL) && \
-    ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline)
+#if defined(__clang__) && !defined(PROTOBUF_NO_INLINE_CALL)
+#if ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline)
 #define PROTOBUF_ALWAYS_INLINE_CALL [[clang::always_inline]]
-#else
+#endif
+#endif
+#ifndef PROTOBUF_ALWAYS_INLINE_CALL
 #define PROTOBUF_ALWAYS_INLINE_CALL
 #endif
 
