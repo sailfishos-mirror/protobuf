@@ -48,6 +48,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/serial_arena.h"
 
 // Must be included last.
@@ -437,7 +438,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // For LITE objects we use the generic MergeFrom to save on binary size.
       return MergeFrom<MessageLite>(from, arena);
     }
-    MergeFromConcreteMessage(from, arena, Arena::CopyConstruct<T>);
+    MergeFromConcreteMessage(from, arena,
+                             internal::PrivateAccess::CopyConstructFn<T>());
   }
 
   void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
@@ -766,10 +768,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   friend class RustRepeatedMessageHelper;
 
   // Concrete Arena enabled copy function used to copy messages instances.
-  // This follows the `Arena::CopyConstruct` signature so that the compiler
-  // can have the inlined call into the out of line copy function(s) simply pass
-  // the address of `Arena::CopyConstruct` 'as is'.
-  using CopyFn = void* (*)(Arena*, const void*);
+  // This is the signature of the generated `T::CopyConstructImpl_()` so that
+  // its address can be passed 'as is'. `to` is always null here: a new message
+  // is allocated on `arena` (or the heap).
+  using CopyFn = void* (*)(void* to, Arena* arena, const void* from);
 
   struct Rep {
     // The size of the elements array, in number of elements.
@@ -1090,7 +1092,9 @@ class GenericTypeHandler {
 
   static constexpr auto GetNewFunc() {
     return [](Arena* arena, void*& ptr) {
-      ptr = Arena::DefaultConstruct<Type>(arena);
+      // Through the ClassData, so that `Type` may be incomplete (proto_h
+      // forward declarations) and no per type function is instantiated.
+      ptr = NewMessageNoInline(MessageTraits<Type>::class_data(), arena);
     };
   }
   static constexpr auto GetNewWithMoveFunc(

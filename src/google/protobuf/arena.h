@@ -757,13 +757,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   //
   // Functions with a generic signature to support taking the address in generic
   // contexts, like RepeatedPtrField, etc.
-  // These are also used as a hook for `extern template` instantiations where
-  // codegen can offload the instantiations to the respective .pb.cc files. This
-  // has two benefits:
-  //  - It reduces the library bloat as callers don't have to instantiate the
-  //  function.
-  //  - It allows the optimizer to see the constructors called to
-  //  further optimize the instantiation.
   template <typename T>
   static void* PROTOBUF_NONNULL
   DefaultConstruct(Arena* PROTOBUF_NULLABLE arena);
@@ -1135,9 +1128,6 @@ class [[nodiscard]] ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
 };
 
 // DefaultConstruct/CopyConstruct
-//
-// IMPORTANT: These have to be defined out of line and without an `inline`
-// keyword to make sure the `extern template` suppresses instantiations.
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {

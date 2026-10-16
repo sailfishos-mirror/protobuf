@@ -98,6 +98,12 @@ namespace internal {
 
 struct PrivateAccess;
 
+// `ClassData::New()` kept out of line, so that the inline
+// `MessageLite::DefaultConstruct<T>()` does not inline the message creator into
+// every caller. Defined in message_lite.cc.
+PROTOBUF_EXPORT MessageLite* NewMessageNoInline(const ClassData* class_data,
+                                                Arena* arena);
+
 // Allow easy change to regular int on platforms where the atomic might have a
 // perf impact.
 //
@@ -798,9 +804,19 @@ class PROTOBUF_EXPORT MessageLite {
     }
   }
 
+  // Creates a `T` for generated code. `T` is either a generated message, which
+  // is created through its `ClassData` so that `T` may be incomplete (proto_h
+  // forward declarations), or a field type with an arena offset
+  // (`RepeatedPtrField<Msg>` etc.), which is left to `Arena::DefaultConstruct`.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* DefaultConstruct(Arena* arena) {
-    return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
+    if constexpr (internal::FieldHasArenaOffset<T>()) {
+      return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
+    } else {
+      // reinterpret_cast because `T` may be incomplete here.
+      return reinterpret_cast<T*>(internal::NewMessageNoInline(
+          internal::MessageTraits<T>::class_data(), arena));
+    }
   }
 
   template <typename T>
@@ -817,13 +833,26 @@ class PROTOBUF_EXPORT MessageLite {
     }
   }
 
+  // Copy constructs a generated message through its out of line
+  // `T::CopyConstructImpl_()`.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* CopyConstruct(Arena* arena, const T& from) {
-    return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
+    return static_cast<T*>(T::CopyConstructImpl_(nullptr, arena, &from));
   }
 
   // As above, but for fields that use base class type. Eg foreign weak fields.
   static MessageLite* CopyConstruct(Arena* arena, const MessageLite& from);
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  // Allocates `allocation_size` bytes on `arena` (or the heap when `arena` is
+  // null) and constructs the MessageLite base in them with `from`'s class data.
+  // Used by the generated `T::CopyConstructImpl_()`, which then copy constructs
+  // the rest of the message. Only valid with PROTOBUF_CUSTOM_VTABLE, where
+  // MessageLite has no vtable pointer and the derived constructor does not need
+  // to run for this.
+  static MessageLite* AllocateAndInitBase(Arena* arena, const MessageLite& from,
+                                          size_t allocation_size);
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   PROTOBUF_ALWAYS_INLINE static Message* CopyConstruct(Arena* arena,
                                                        const Message& from) {
