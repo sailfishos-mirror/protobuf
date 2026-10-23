@@ -383,21 +383,18 @@ void UPB_PRIVATE(_upb_MessageDebugString)(txtenc* e, const upb_Message* msg,
     }
   }
 
-  const upb_MiniTableExtension* ext;
   upb_MessageValue val_ext;
   iter = kUpb_Message_ExtensionBegin;
-  while (upb_Message_NextExtension(msg, &ext, &val_ext, &iter)) {
-    const upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
-    // It is not sufficient to only pass |f| as we lose valuable information
-    // about sub-messages. It is required that we pass |ext|.
+  while (upb_Message_NextExtensionField(msg, &f, &val_ext, &iter)) {
+    // The extension's field is sufficient to find its sub-message, if any.
     if (upb_MiniTableField_IsMap(f)) {
       UPB_UNREACHABLE();
       break;
     } else if (upb_MiniTableField_IsArray(f)) {
-      _upb_ArrayDebugString(e, val_ext.array_val, f, mt, ext);
+      _upb_ArrayDebugString(e, val_ext.array_val, f, mt, NULL);
     } else {
       // label set to NULL as we're not currently working with a MapEntry
-      _upb_FieldDebugString(e, val_ext, f, mt, NULL, ext);
+      _upb_FieldDebugString(e, val_ext, f, mt, NULL, NULL);
     }
   }
 

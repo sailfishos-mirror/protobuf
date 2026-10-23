@@ -498,6 +498,61 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
   return false;
 }
 
+UPB_INLINE bool upb_Message_NextExtensionField(const struct upb_Message* msg,
+                                               const upb_MiniTableField** out_f,
+                                               upb_MessageValue* out_v,
+                                               uintptr_t* iter) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  uintptr_t i = *iter;
+  if (in) {
+    while (i < in->size) {
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
+      if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+        const upb_Extension* ext =
+            upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
+
+        // Empty repeated fields or maps semantically don't exist.
+        if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
+
+        *out_f = upb_Extension_MiniTableField(ext);
+        *out_v = upb_Extension_GetValue(ext);
+        *iter = i;
+        return true;
+      }
+    }
+  }
+  *iter = i;
+
+  return false;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionFieldReverse)(
+    const struct upb_Message* msg, const upb_MiniTableField** out_f,
+    upb_MessageValue* out_v, uintptr_t* iter) {
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return false;
+  uintptr_t i = *iter;
+  uint32_t size = in->size;
+  while (i < size) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[size - 1 - i];
+    i++;
+    if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      continue;
+    }
+    const upb_Extension* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
+
+    // Empty repeated fields or maps semantically don't exist.
+    if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
+
+    *out_f = upb_Extension_MiniTableField(ext);
+    *out_v = upb_Extension_GetValue(ext);
+    *iter = i;
+    return true;
+  }
+  *iter = i;
+  return false;
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
