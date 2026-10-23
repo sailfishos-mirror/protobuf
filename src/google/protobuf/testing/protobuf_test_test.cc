@@ -23,6 +23,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/testing/protobuf_test_test_fixture.h"
 #include "google/protobuf/unittest.pb.h"
 
 namespace google {
@@ -245,6 +246,11 @@ std::vector<std::string>& RecordedSanitizedTypeTestNames() {
 }
 
 std::vector<std::string>& RecordedSameLineTypes() {
+  static auto* v = new std::vector<std::string>();
+  return *v;
+}
+
+std::vector<std::string>& RecordedSameLineMixed() {
   static auto* v = new std::vector<std::string>();
   return *v;
 }
@@ -589,6 +595,18 @@ PB_TEST(ProtobufStandaloneTest, SameLineChooseType) {
                    *GetTypeName<typename PairType::second_type>()));
 }
 
+#define PB_TEST_SAME_LINE_MIXED()                    \
+  using T = PB_TEST_CHOOSE_TYPE((int32_t, int64_t)); \
+  int v = PB_TEST_CHOOSE_VALUE((10, 20), "v");       \
+  constexpr int k = PB_TEST_CHOOSE_CONSTEXPR((1, 2), "k");
+PB_TEST(ProtobufStandaloneTest, SameLineMixedDimensions) {
+  PB_TEST_SAME_LINE_MIXED()
+  RecordedSameLineMixed().push_back(absl::StrCat(
+      sizeof(T), ":", v, ":", k, ":",
+      ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+}
+#undef PB_TEST_SAME_LINE_MIXED
+
 #define PB_TEST_DEFINE_TWO_ON_SAME_LINE()                \
   PB_TEST(ProtobufStandaloneTest, MacroExpandedFirst) {  \
     ++g_macro_first_runs;                                \
@@ -734,6 +752,14 @@ PB_TEST_F(ProtobufFixtureBelowPlain, InheritsAllBaseDimensions) {
       ::testing::UnitTest::GetInstance()->current_test_info()->name()));
 }
 
+// `ProtobufSharedFixture` is also used by protobuf_test_test_tu2.cc, which
+// advances `__COUNTER__` before including protobuf_test_test_fixture.h.
+PB_TEST_F(ProtobufSharedFixture, FirstTu) {
+  SharedFixtureRuns().push_back(absl::StrCat(
+      "1:", base_, ":", b_, ":", dep_, ":",
+      ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+}
+
 static_assert(
     std::is_same_v<
         FixtureBasesOf<
@@ -760,12 +786,11 @@ static_assert(
 TEST(ProtobufDeathTest, EmptyChooseValueDimensionTerminates) {
   EXPECT_DEATH(
       PartialTestRegistry::Get().AddValueDimension<ProtobufTestFixture>(
-          static_cast<CounterT>(999999), nullptr,
-          ChooseValueImpl(std::vector<int>{}), {"std::vector<int>{}"}),
+          nullptr, ChooseValueImpl(std::vector<int>{}), {"std::vector<int>{}"}),
       "PB_TEST_CHOOSE_VALUE requires at least one element");
   EXPECT_DEATH(
       PartialTestRegistry::Get().AddValueDimension<ProtobufTestFixture>(
-          static_cast<CounterT>(999999), nullptr, 0, {"()"}),
+          nullptr, 0, {"()"}),
       "PB_TEST_CHOOSE_VALUE requires at least one element");
 }
 
@@ -995,6 +1020,81 @@ class VerificationEnvironment : public ::testing::Environment {
                     "2:200:3:InheritsAllBaseDimensions/base_2/below_3",
                     "1:100:4:InheritsAllBaseDimensions/base_1/below_4",
                     "2:200:4:InheritsAllBaseDimensions/base_2/below_4"));
+    EXPECT_THAT(
+        SharedFixtureRuns(),
+        ElementsAre(
+            "1:10:3:30:FirstTu/base_10/b_3/even",
+            "1:20:3:30:FirstTu/base_20/b_3/even",
+            "1:10:4:40:FirstTu/base_10/b_4/even",
+            "1:20:4:40:FirstTu/base_20/b_4/even",
+            "1:10:3:31:FirstTu/base_10/b_3/odd",
+            "1:20:3:31:FirstTu/base_20/b_3/odd",
+            "1:10:4:41:FirstTu/base_10/b_4/odd",
+            "1:20:4:41:FirstTu/base_20/b_4/odd",
+            "2:10:3:30:4:100:1:int32_t:SecondTu/base_10/b_3/even/int32_t/"
+            "body_100/scale_1",
+            "2:20:3:30:4:100:1:int32_t:SecondTu/base_20/b_3/even/int32_t/"
+            "body_100/scale_1",
+            "2:10:4:40:4:100:1:int32_t:SecondTu/base_10/b_4/even/int32_t/"
+            "body_100/scale_1",
+            "2:20:4:40:4:100:1:int32_t:SecondTu/base_20/b_4/even/int32_t/"
+            "body_100/scale_1",
+            "2:10:3:31:4:100:1:int32_t:SecondTu/base_10/b_3/odd/int32_t/"
+            "body_100/scale_1",
+            "2:20:3:31:4:100:1:int32_t:SecondTu/base_20/b_3/odd/int32_t/"
+            "body_100/scale_1",
+            "2:10:4:41:4:100:1:int32_t:SecondTu/base_10/b_4/odd/int32_t/"
+            "body_100/scale_1",
+            "2:20:4:41:4:100:1:int32_t:SecondTu/base_20/b_4/odd/int32_t/"
+            "body_100/scale_1",
+            "2:10:3:30:4:100:2:int32_t:SecondTu/base_10/b_3/even/int32_t/"
+            "body_100/scale_2",
+            "2:20:3:30:4:100:2:int32_t:SecondTu/base_20/b_3/even/int32_t/"
+            "body_100/scale_2",
+            "2:10:4:40:4:100:2:int32_t:SecondTu/base_10/b_4/even/int32_t/"
+            "body_100/scale_2",
+            "2:20:4:40:4:100:2:int32_t:SecondTu/base_20/b_4/even/int32_t/"
+            "body_100/scale_2",
+            "2:10:3:31:4:100:2:int32_t:SecondTu/base_10/b_3/odd/int32_t/"
+            "body_100/scale_2",
+            "2:20:3:31:4:100:2:int32_t:SecondTu/base_20/b_3/odd/int32_t/"
+            "body_100/scale_2",
+            "2:10:4:41:4:100:2:int32_t:SecondTu/base_10/b_4/odd/int32_t/"
+            "body_100/scale_2",
+            "2:20:4:41:4:100:2:int32_t:SecondTu/base_20/b_4/odd/int32_t/"
+            "body_100/scale_2",
+            "2:10:3:30:8:100:1:int64_t:SecondTu/base_10/b_3/even/int64_t/"
+            "body_100/scale_1",
+            "2:20:3:30:8:100:1:int64_t:SecondTu/base_20/b_3/even/int64_t/"
+            "body_100/scale_1",
+            "2:10:4:40:8:100:1:int64_t:SecondTu/base_10/b_4/even/int64_t/"
+            "body_100/scale_1",
+            "2:20:4:40:8:100:1:int64_t:SecondTu/base_20/b_4/even/int64_t/"
+            "body_100/scale_1",
+            "2:10:3:31:8:100:1:int64_t:SecondTu/base_10/b_3/odd/int64_t/"
+            "body_100/scale_1",
+            "2:20:3:31:8:100:1:int64_t:SecondTu/base_20/b_3/odd/int64_t/"
+            "body_100/scale_1",
+            "2:10:4:41:8:100:1:int64_t:SecondTu/base_10/b_4/odd/int64_t/"
+            "body_100/scale_1",
+            "2:20:4:41:8:100:1:int64_t:SecondTu/base_20/b_4/odd/int64_t/"
+            "body_100/scale_1",
+            "2:10:3:30:8:100:2:int64_t:SecondTu/base_10/b_3/even/int64_t/"
+            "body_100/scale_2",
+            "2:20:3:30:8:100:2:int64_t:SecondTu/base_20/b_3/even/int64_t/"
+            "body_100/scale_2",
+            "2:10:4:40:8:100:2:int64_t:SecondTu/base_10/b_4/even/int64_t/"
+            "body_100/scale_2",
+            "2:20:4:40:8:100:2:int64_t:SecondTu/base_20/b_4/even/int64_t/"
+            "body_100/scale_2",
+            "2:10:3:31:8:100:2:int64_t:SecondTu/base_10/b_3/odd/int64_t/"
+            "body_100/scale_2",
+            "2:20:3:31:8:100:2:int64_t:SecondTu/base_20/b_3/odd/int64_t/"
+            "body_100/scale_2",
+            "2:10:4:41:8:100:2:int64_t:SecondTu/base_10/b_4/odd/int64_t/"
+            "body_100/scale_2",
+            "2:20:4:41:8:100:2:int64_t:SecondTu/base_20/b_4/odd/int64_t/"
+            "body_100/scale_2"));
     EXPECT_THAT(RecordedBools(), ElementsAre(false, true));
     EXPECT_THAT(RecordedEnums(),
                 ElementsAre(FOREIGN_FOO, FOREIGN_BAR, FOREIGN_BAZ,
@@ -1133,6 +1233,15 @@ class VerificationEnvironment : public ::testing::Environment {
     EXPECT_THAT(RecordedSameLineTypes(),
                 ElementsAre("int32_t/char", "int32_t/bool", "double/char",
                             "double/bool"));
+    EXPECT_THAT(RecordedSameLineMixed(),
+                ElementsAre("4:10:1:SameLineMixedDimensions/int32_t/v_10/k_1",
+                            "4:20:1:SameLineMixedDimensions/int32_t/v_20/k_1",
+                            "4:10:2:SameLineMixedDimensions/int32_t/v_10/k_2",
+                            "4:20:2:SameLineMixedDimensions/int32_t/v_20/k_2",
+                            "8:10:1:SameLineMixedDimensions/int64_t/v_10/k_1",
+                            "8:20:1:SameLineMixedDimensions/int64_t/v_20/k_1",
+                            "8:10:2:SameLineMixedDimensions/int64_t/v_10/k_2",
+                            "8:20:2:SameLineMixedDimensions/int64_t/v_20/k_2"));
     EXPECT_EQ(g_macro_first_runs, 1);
     EXPECT_EQ(g_macro_second_runs, 1);
     EXPECT_THAT(RecordedParamGeneratorValues(),
@@ -1213,15 +1322,15 @@ TEST(ProtobufTestRegistryTest, RegistersExpectedTestsWithoutDummySuite) {
     }
   }
 
-  EXPECT_THAT(
-      suite_names,
-      UnorderedElementsAre(
-          "ProtobufTestFixture", "ProtobufValueInFixtureTest",
-          "ProtobufStandaloneTest", "ProtobufTestRegistryTest",
-          "ProtobufDeathTest", "ProtobufMisuseTest",
-          "ProtobufRegularTestFFixture", "ProtobufGrandchildFixture",
-          "ProtobufFixtureBase", "ProtobufFixtureMiddle", "ProtobufFixtureLeaf",
-          "ProtobufFixtureViaPlain", "ProtobufFixtureBelowPlain"));
+  EXPECT_THAT(suite_names,
+              UnorderedElementsAre(
+                  "ProtobufTestFixture", "ProtobufValueInFixtureTest",
+                  "ProtobufStandaloneTest", "ProtobufTestRegistryTest",
+                  "ProtobufDeathTest", "ProtobufMisuseTest",
+                  "ProtobufRegularTestFFixture", "ProtobufGrandchildFixture",
+                  "ProtobufFixtureBase", "ProtobufFixtureMiddle",
+                  "ProtobufFixtureLeaf", "ProtobufFixtureViaPlain",
+                  "ProtobufFixtureBelowPlain", "ProtobufSharedFixture"));
 
   ASSERT_NE(standalone_suite, nullptr);
   std::vector<std::string> test_names;
@@ -1377,6 +1486,14 @@ TEST(ProtobufTestRegistryTest, RegistersExpectedTestsWithoutDummySuite) {
       "SameLineChooseType/int32_t/bool",
       "SameLineChooseType/double/char",
       "SameLineChooseType/double/bool",
+      "SameLineMixedDimensions/int32_t/v_10/k_1",
+      "SameLineMixedDimensions/int32_t/v_20/k_1",
+      "SameLineMixedDimensions/int32_t/v_10/k_2",
+      "SameLineMixedDimensions/int32_t/v_20/k_2",
+      "SameLineMixedDimensions/int64_t/v_10/k_1",
+      "SameLineMixedDimensions/int64_t/v_20/k_1",
+      "SameLineMixedDimensions/int64_t/v_10/k_2",
+      "SameLineMixedDimensions/int64_t/v_20/k_2",
       "MacroExpandedFirst",
       "MacroExpandedSecond",
       "RepeatedExecutionFails/1",
