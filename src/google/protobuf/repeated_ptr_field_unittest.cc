@@ -42,6 +42,7 @@
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unknown_field_set.h"
 
 
 // Must be included last.
@@ -360,20 +361,68 @@ TEST_F(RepeatedPtrFieldTest, DestroyErroneousIncorrectElement) {
 }
 
 TEST_F(RepeatedPtrFieldTest, DestroyErroneousMixedElements) {
-#if defined(NDEBUG) || !defined(PROTOBUF_CUSTOM_VTABLE)
-  GTEST_SKIP() << "The `DCHECK` is disabled in release builds / "
-                  "!PROTOBUF_CUSTOM_VTABLE.";
+#if !defined(PROTOBUF_CUSTOM_VTABLE) || !defined(GTEST_HAS_DEATH_TEST)
+  GTEST_SKIP() << "!PROTOBUF_CUSTOM_VTABLE || !GTEST_HAS_DEATH_TEST";
 #else
-  auto destroy_heterogenous_repeated_field = []() {
-    RepeatedPtrField<google::protobuf::MessageLite> field;
-    field.AddAllocated(new TestAllTypes);
-    field.AddAllocated(new proto2_unittest::NestedTestAllTypes);
-  };
-  // The destructor of `RepeatedPtrField` verifies that all elements are of the
-  // same type if the element type is `Message` or `MessageLite`.
-  ASSERT_DEATH(destroy_heterogenous_repeated_field(),
-               "Type mismatch in RepeatedPtrField");
+  // The destructor of `RepeatedPtrField` verifies in debug builds that all
+  // elements are of the same type if the element type is `Message` or
+  // `MessageLite`, and safely destroys them in release builds.
+  EXPECT_DEBUG_DEATH(
+      {
+        RepeatedPtrField<google::protobuf::MessageLite> field;
+        auto* first = new TestAllTypes;
+        first->set_optional_string(
+            "first element string longer than SSO buffer");
+        first->mutable_unknown_fields()->AddVarint(999999, 1);
+        field.AddAllocated(first);
+        field.AddAllocated(new proto2_unittest::ForeignMessage);
+        auto* third = new TestAllTypes;
+        third->set_optional_string(
+            "third element string longer than SSO buffer");
+        field.AddAllocated(third);
+      },
+      "Type mismatch in RepeatedPtrField");
+  EXPECT_DEBUG_DEATH(
+      {
+        RepeatedPtrField<google::protobuf::Message> field;
+        auto* first = new proto2_unittest::ForeignMessage;
+        first->mutable_unknown_fields()->AddVarint(999999, 1);
+        field.AddAllocated(first);
+        auto* second = new proto2_unittest::NestedTestAllTypes;
+        second->mutable_payload()->set_optional_string(
+            "nested payload string longer than SSO buffer");
+        second->mutable_unknown_fields()->AddLengthDelimited(
+            999998, "unknown field payload longer than SSO buffer");
+        field.AddAllocated(second);
+      },
+      "Type mismatch in RepeatedPtrField");
 #endif
+}
+
+TEST_F(RepeatedPtrFieldTest, DestroyElementsWithUnknownFields) {
+  {
+    RepeatedPtrField<google::protobuf::MessageLite> field;
+    auto* m0 = new TestAllTypes;
+    m0->mutable_unknown_fields()->AddVarint(999999, 1);
+    field.AddAllocated(m0);
+
+    auto* m1 = new TestAllTypes;
+    m1->set_optional_string("plain element string longer than SSO buffer");
+    field.AddAllocated(m1);
+
+    auto* m2 = new TestAllTypes;
+    m2->mutable_unknown_fields()->AddLengthDelimited(
+        999998, "unknown field payload longer than SSO buffer");
+    field.AddAllocated(m2);
+  }
+  {
+    RepeatedPtrField<TestAllTypes> field;
+    field.Add()->mutable_unknown_fields()->AddVarint(999999, 1);
+    field.Add()->set_optional_string(
+        "plain element string longer than SSO buffer");
+    field.Add()->mutable_unknown_fields()->AddLengthDelimited(
+        999998, "unknown field payload longer than SSO buffer");
+  }
 }
 
 namespace {
