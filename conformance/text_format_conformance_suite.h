@@ -51,6 +51,7 @@ class TextFormatConformanceTestSuiteImpl {
   void RunAllTests();
 
   void RunDelimitedTests();
+  void RunEdition2026Tests();
   void RunGroupTests();
   void RunAnyTests();
   void RunOpenEnumTests();

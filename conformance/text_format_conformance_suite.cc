@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -20,6 +21,7 @@
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition2026.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
@@ -32,6 +34,7 @@ using conformance::ConformanceResponse;
 using conformance::TestStatus;
 using conformance::WireFormat;
 using protobuf_test_messages::editions::TestAllTypesEdition2023;
+using protobuf_test_messages::editions::TestAllTypesEdition2026;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
@@ -135,14 +138,21 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
     TextFormatConformanceTestSuiteImpl<TestAllTypesProto3Editions>(this);
     TextFormatConformanceTestSuiteImpl<TestAllTypesEdition2023>(this);
   }
+  if (maximum_edition_ >= Edition::EDITION_2026) {
+    TextFormatConformanceTestSuiteImpl<TestAllTypesEdition2026>(this);
+  }
 }
 
 template <typename MessageType>
 TextFormatConformanceTestSuiteImpl<MessageType>::
     TextFormatConformanceTestSuiteImpl(TextFormatConformanceTestSuite* suite)
     : suite_(*ABSL_DIE_IF_NULL(suite)) {
-  // Flag control performance tests to keep them internal and opt-in only
-  if (suite_.performance_) {
+  if constexpr (std::is_same_v<MessageType, TestAllTypesEdition2026>) {
+    if (!suite_.performance_) {
+      RunEdition2026Tests();
+    }
+  } else if (suite_.performance_) {
+    // Flag control performance tests to keep them internal and opt-in only
     if (MessageType::GetDescriptor()->name() == "TestAllTypesEdition2023") {
       // There are no editions-sensitive performance tests.
       return;
@@ -986,6 +996,49 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunClosedEnumTests() {
                      R"(
         optional_nested_enum: 42
         )");
+}
+
+template <typename MessageType>
+void TextFormatConformanceTestSuiteImpl<MessageType>::RunEdition2026Tests() {
+  // The (pb.enumvalue.json) option applies only to JSON; TextFormat must
+  // accept and emit declared enum value names and reject custom JSON names.
+  RunValidTextFormatTest("EnumValueWithCustomJsonNameUsesDeclaredName",
+                         REQUIRED,
+                         "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_BAR");
+  RunValidTextFormatTest(
+      "EnumValueWithEmptyCustomJsonNameUsesDeclaredName", REQUIRED,
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY");
+  RunValidTextFormatTestWithExpected(
+      "EnumValueAliasWithCustomJsonNameUsesDeclaredName", REQUIRED,
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_ALIAS_TOO",
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_ALIAS");
+  RunValidTextFormatTest(
+      "RepeatedAndMapEnumValueWithCustomJsonNameUsesDeclaredName", REQUIRED,
+      R"(
+        repeated_foreign_enum: [
+          FOREIGN_ENUM_EDITION2026_BAR,
+          FOREIGN_ENUM_EDITION2026_BAZ
+        ]
+        map_string_foreign_enum {
+          key: "a"
+          value: FOREIGN_ENUM_EDITION2026_BAR
+        }
+      )");
+  RunValidTextFormatTest(
+      "EnumValueEmptyJsonOptionUsesDeclaredName", RECOMMENDED,
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION");
+
+  ExpectParseFailure("EnumValueCustomJsonNameRejected", REQUIRED,
+                     "optional_foreign_enum: customBar");
+  ExpectParseFailure("EnumValueCustomJsonNameStringRejected", REQUIRED,
+                     R"(optional_foreign_enum: "customBar")");
+  ExpectParseFailure("EnumValueAliasCustomJsonNameRejected", REQUIRED,
+                     "optional_foreign_enum: customAlias");
+  ExpectParseFailure("RepeatedEnumValueCustomJsonNameRejected", REQUIRED,
+                     "repeated_foreign_enum: [customBar]");
+  ExpectParseFailure(
+      "MapEnumValueCustomJsonNameRejected", REQUIRED,
+      R"(map_string_foreign_enum { key: "a" value: customBar })");
 }
 
 }  // namespace conformance
